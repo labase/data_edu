@@ -19,6 +19,9 @@ Added
 +++++
 - Recover data from Github.
 - Initial overview of data.
+- Split users in the same machine
+- Speed and acceleration charts
+- Questions answered
 
 Changed
 +++++++
