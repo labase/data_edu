@@ -22,6 +22,11 @@ Added
 - Split users in the same machine
 - Speed and acceleration charts
 - Questions answered
+- Recorte de múltiplos usuários.
+- Análise de velocidade e aceleração
+- Análise de respostas com erro
+- Extração do código EICA
+
 
 Changed
 +++++++
