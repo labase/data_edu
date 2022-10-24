@@ -17,8 +17,11 @@ A capacidade de cada uma das seções da disposição deve ser obedecida fielmen
 
 Changelog
 ---------
-.. versionadded::    20.10
+.. versionadded::    20.10a0
         primeira versão.
+
+.. versionchanged::    20.10a1
+        comando em separado por seção.
 """
 from random import shuffle, seed
 seed(123)
@@ -38,28 +41,27 @@ class Shunting:
             return int("".join(str(al)for al in c[idx]) or 0)
         return f" -> A> {s(A):03} <-> B> {s(B):05} <-> C> {s(C):03} <-> D> {s(D):03} <- "
 
-    def move(self, fro, siz, to, cnv):
+    def move(self, to, siz):
         s = self.sections
-        sec_fro = s[A] if fro == A else s[A]+s[fro]
-        if (siz + len(s[to])-cnv) > (5 if to == B else 3):
-            print(f"faulty, {fro}, siz, {siz}, to, {to}, len(s[to]), {len(s[to])},"
-                  f" cnv, {cnv}, cvy {len((sec_fro[:siz])[cnv:])}"
-                  f" tst, {siz + len(s[to])-cnv}, (5 if to == B else 3), {5 if to == B else 3}, s[to], {s[to]} ")
+        a_plus_to = s[A] + s[to]
+        size_a_p_to = len(a_plus_to)
+        if (size_a_p_to-siz) > (5 if to == B else 3):
+            print(f"faulty, siz, {siz}, to, {to}, len(s[to]), {len(s[to])},"
+                  f" (5 if to == B else 3), {5 if to == B else 3}, s[to], {s[to]} ")
             return
-        cvy, s[fro] = sec_fro[:siz] + s[to], sec_fro[siz:]
-        s[to] = (cvy[cnv:])[:5 if to == B else 3]
-        s[A] = cvy[:cnv]
+        s[A], s[to] = a_plus_to[:siz], a_plus_to[siz:]
 
     def go(self, moves):
         moves = moves.upper()
-        moves_ = [moves[i:i+4] for i in range(0, len(moves), 4)]
-        [self.move(fro, int(siz), to, int(cnv)) for fro, siz, to, cnv in moves_]
+        moves_ = [moves[i:i+2] for i in range(0, len(moves), 2)]
+        [self.move(fro, int(siz)) for fro, siz, in moves_]
 
 
 if __name__ == '__main__':
     shu = Shunting()
     print(shu)
     # shu.move(B, 3, D)
+    # shu.go("c1d0b2d0d1c0")
     shu.go("c1d0b2d0d1c0d1b3a3d1c3b1c2b1d2c1b3c1a1d0b3d3a3b0c2b0")
     # shu.go("B1D0c1b0c2d0d1c0d2c0b3d0c3b0b5c3c4b0b3c1c4b0d1c0b5c4d5b0")
     # shu.go("B1D0c1b0c2d0d1c0d2c0b4d1a1b0d3b0")
