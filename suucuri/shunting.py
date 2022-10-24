@@ -46,8 +46,8 @@ class Shunting:
                   f" cnv, {cnv}, cvy {len((sec_fro[:siz])[cnv:])}"
                   f" tst, {siz + len(s[to])-cnv}, (5 if to == B else 3), {5 if to == B else 3}, s[to], {s[to]} ")
             return
-        cvy, s[fro] = sec_fro[:siz], sec_fro[siz:]
-        s[to] = (cvy[cnv:] + s[to])[:5 if to == B else 3]
+        cvy, s[fro] = sec_fro[:siz] + s[to], sec_fro[siz:]
+        s[to] = (cvy[cnv:])[:5 if to == B else 3]
         s[A] = cvy[:cnv]
 
     def go(self, moves):
@@ -60,7 +60,8 @@ if __name__ == '__main__':
     shu = Shunting()
     print(shu)
     # shu.move(B, 3, D)
-    shu.go("B1D0c1b0c2d0d1c0d2c0b3d0c3b0b5c3c4b0b3c1c4b0d1c0b5c4d5b0")
+    shu.go("c1d0b2d0d1c0d1b3a3d1c3b1c2b1d2c1b3c1a1d0b3d3a3b0c2b0")
+    # shu.go("B1D0c1b0c2d0d1c0d2c0b3d0c3b0b5c3c4b0b3c1c4b0d1c0b5c4d5b0")
     # shu.go("B1D0c1b0c2d0d1c0d2c0b4d1a1b0d3b0")
     # shu.go("B1D0c1bc2dd1cd2cb1db2dc3bd2cd1cb3d")
     print(shu)
