@@ -26,6 +26,10 @@ Changelog
 from random import shuffle, seed
 seed(123)
 A, B, C, D = "ABCD"
+SA, SB, SC, SD = 3, 5, 3, 3
+"""Comprimento das seções dos trilhos"""
+CONVOY = 8
+"""Número de vagões no total"""
 
 
 class Shunting:
@@ -34,9 +38,9 @@ class Shunting:
 
         Inicia colocando aleatoriamente oito vagões, cinco na seção B e três na C.
         """
-        convoy = list(range(1, 9))
+        convoy = list(range(1, CONVOY+1))
         shuffle(convoy)
-        convoy = [[], convoy[:5], convoy[5:], []]
+        convoy = [[], convoy[:SB], convoy[SB:], []]
         self.sections = {name: cars for name, cars in zip("ABCD", convoy)}
 
     def __repr__(self):
@@ -47,7 +51,10 @@ class Shunting:
         def s(idx):
             c = self.sections
             return int("".join(str(al)for al in c[idx]) or 0)
-        return f" -> A> {s(A):03} <-> B> {s(B):05} <-> C> {s(C):03} <-> D> {s(D):03} <- "
+        format_string = " -> {{:0{sa}}} <-> B> {{:0{sb}}} <-> C> {{:0{sc}}} <-> D> {{:0{sd}}} <- "
+        format_string = format_string.format(sa=SA, sb=SB, sc=SC, sd=SD)
+        # return f" -> A> {s(A):05} <-> B> {s(B):05} <-> C> {s(C):03} <-> D> {s(D):03} <- "
+        return format_string.format(s(A), s(B), s(C), s(D))
 
     def move(self, to, siz):
         """Move o trem da seção A para a seção destino, desacopla e volta.
@@ -59,9 +66,9 @@ class Shunting:
         s = self.sections
         a_plus_to = s[A] + s[to]
         size_a_p_to = len(a_plus_to)
-        if (size_a_p_to-siz) > (5 if to == B else 3):
+        if (size_a_p_to-siz) > (SB if to == B else SC):
             print(f"faulty, siz, {siz}, to, {to}, len(s[to]), {len(s[to])},"
-                  f" (5 if to == B else 3), {5 if to == B else 3}, s[to], {s[to]} ")
+                  f" (5 if to == B else 3), {SB if to == B else SC}, s[to], {s[to]} ")
             return
         s[A], s[to] = a_plus_to[:siz], a_plus_to[siz:]
 
