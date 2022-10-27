@@ -26,9 +26,13 @@ Changelog
 from random import shuffle, seed
 seed(123)
 A, B, C, D = "ABCD"
-SA, SB, SC, SD = 3, 5, 3, 3
+# SA, SB, SC, SD = 3, 5, 3, 3
 """Comprimento das seções dos trilhos"""
-CONVOY = 8
+# CONVOY = 8
+"""Número de vagões no total"""
+SA, SB, SC, SD = 2, 3, 1, 1
+"""Comprimento das seções dos trilhos"""
+CONVOY = 3
 """Número de vagões no total"""
 
 
@@ -51,7 +55,7 @@ class Shunting:
         def s(idx):
             c = self.sections
             return int("".join(str(al)for al in c[idx]) or 0)
-        format_string = " -> {{:0{sa}}} <-> B> {{:0{sb}}} <-> C> {{:0{sc}}} <-> D> {{:0{sd}}} <- "
+        format_string = " -> A>  {{:0{sa}}} <-> B> {{:0{sb}}} <-> C> {{:0{sc}}} <-> D> {{:0{sd}}} <- "
         format_string = format_string.format(sa=SA, sb=SB, sc=SC, sd=SD)
         # return f" -> A> {s(A):05} <-> B> {s(B):05} <-> C> {s(C):03} <-> D> {s(D):03} <- "
         return format_string.format(s(A), s(B), s(C), s(D))
@@ -66,9 +70,9 @@ class Shunting:
         s = self.sections
         a_plus_to = s[A] + s[to]
         size_a_p_to = len(a_plus_to)
-        if (size_a_p_to-siz) > (SB if to == B else SC):
-            print(f"faulty, siz, {siz}, to, {to}, len(s[to]), {len(s[to])},"
-                  f" (5 if to == B else 3), {SB if to == B else SC}, s[to], {s[to]} ")
+        if (size_a_p_to-siz) > (SB if to == B else SC) or (siz > SA):
+            # print(f"faulty, siz, {siz}, to, {to}, len(s[to]), {len(s[to])},"
+            #       f" (5 if to == B else 3), {SB if to == B else SC}, s[to], {s[to]} ")
             return
         s[A], s[to] = a_plus_to[:siz], a_plus_to[siz:]
 
@@ -82,9 +86,35 @@ class Shunting:
         moves_ = [moves[i:i+2] for i in range(0, len(moves), 2)]
         [self.move(fro, int(siz)) for fro, siz, in moves_]
 
+    def self_go(self, total=10, elenco=7):
+        """Recebe uma sequência de comados de mover
+
+        :param total: tamanho total da sequência de tentativas.
+        :return: None
+        """
+        def avante(ordem, base):
+            ordem -= 1
+            if ordem:
+                for algarismo in range(base):
+                    for casa in avante(ordem, algarismo):
+                        yield f"{casa}{algarismo}"
+            else:
+                yield ""
+
+        moves = "b0 b1 c0 c1 c2 d0 d2".split()
+        acerto = [0]*total
+        # moves = "b0 b1 b2 c0 c1 c2 d0 d1 d2".split()
+        tentativas = range(len(moves)**total)
+        ordens = [7**order for order in range(total)]
+        for valor in tentativas:
+            vec = [(valor // ordem) % 7 for ordem in ordens]
+            print("".join(moves[idx] for idx in vec))
+
 
 if __name__ == '__main__':
     shu = Shunting()
     print(shu)
-    shu.go("c1d0b2d0d1c0d1b3a3d1c3b1c2b1d2c1b3c1a1d0b3d3a3b0c2b0")
+    # shu.go("c1d0b2d0d1c0d1b3a3d1c3b1c2b1d2c1b3c1a1d0b3d3a3b0c2b0")
+    shu.go("b1c0b1d0b1c1c2b1d2b0")
+    shu.self_go(3, 3)
     print(shu)
