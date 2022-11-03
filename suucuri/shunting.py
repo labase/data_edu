@@ -44,8 +44,16 @@ class Shunting:
         """
         convoy = list(range(1, CONVOY+1))
         shuffle(convoy)
-        convoy = [[], convoy[:SB], convoy[SB:], []]
-        self.sections = {name: cars for name, cars in zip("ABCD", convoy)}
+        self.convoy = [[], convoy[:SB], convoy[SB:], []]
+        self.sections = {name: cars for name, cars in zip("ABCD", self.convoy)}
+        self.best = []
+
+    def park(self):
+        """Estaciona os vagões em posição inicial.
+
+        :return: None
+        """
+        self.sections = {name: cars for name, cars in zip("ABCD", self.convoy)}
 
     def __repr__(self):
         """Formata a apresentação dos vagões.
@@ -80,41 +88,50 @@ class Shunting:
         """Recebe uma sequência de comados de mover
 
         :param moves: texto com duplas indicando a seção e o ponto de desacoplamento.
-        :return: None
+        :return: índice da adequação da resposta
         """
         moves = moves.upper()
         moves_ = [moves[i:i+2] for i in range(0, len(moves), 2)]
         [self.move(fro, int(siz)) for fro, siz, in moves_]
+        # return sum((SB-pos+1)*SB*(CONVOY-int(carro)) for pos, carro in enumerate(self.sections[B]))
+        return sum(10**(SB-pos-1)*(CONVOY-(carro-1)) for pos, carro in enumerate(self.sections[B]))
 
-    def self_go(self, total=10, elenco=7):
+    def self_go(self, total=10):
         """Recebe uma sequência de comados de mover
 
         :param total: tamanho total da sequência de tentativas.
         :return: None
         """
-        def avante(ordem, base):
-            ordem -= 1
-            if ordem:
-                for algarismo in range(base):
-                    for casa in avante(ordem, algarismo):
-                        yield f"{casa}{algarismo}"
-            else:
-                yield ""
-
         moves = "b0 b1 c0 c1 c2 d0 d2".split()
-        acerto = [0]*total
         # moves = "b0 b1 b2 c0 c1 c2 d0 d1 d2".split()
-        tentativas = range(len(moves)**total)
-        ordens = [7**order for order in range(total)]
+        base = len(moves)
+        tentativas = range(base**total)
+        ordens = [base**order for order in range(total)]
+        print(f"tentativas {tentativas} ordens {ordens}")
+        maxi = 0
         for valor in tentativas:
+            self.park()
             vec = [(valor // ordem) % 7 for ordem in ordens]
-            print("".join(moves[idx] for idx in vec))
+            roteiro = "".join(moves[idx] for idx in vec)
+            fit = self.go(roteiro)
+            if fit > maxi:
+                self.best = []
+                maxi = fit
+            if fit >= maxi:
+                self.best.append((fit, valor, roteiro, self.sections))
+        [print(good) for good in self.best]
 
 
 if __name__ == '__main__':
+    # (320, 70400, 'b1d0b1c0b1c2b0', {'A': [], 'B': [1, 2], 'C': [], 'D': [3]})
+    # (320, 105022, 'b1c0b1d0b1d2b0', {'A': [], 'B': [1, 2], 'C': [3], 'D': []})
+
     shu = Shunting()
     print(shu)
+    # shu.move(B, 1)
+    # shu.move(C, 0)
+    print(shu.go("b1c0b1d0"))
     # shu.go("c1d0b2d0d1c0d1b3a3d1c3b1c2b1d2c1b3c1a1d0b3d3a3b0c2b0")
-    shu.go("b1c0b1d0b1c1c2b1d2b0")
-    shu.self_go(3, 3)
+    # shu.go("b1c0b1d0b1c1c2b1d2b0")
+    shu.self_go(7)
     print(shu)
