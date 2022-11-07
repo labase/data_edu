@@ -22,6 +22,9 @@ Changelog
 
 .. versionchanged::    20.10a1
         comando em separado por seção.
+
+.. versionadded::    20.11a0
+        Continua após um arranjo de seções.
 """
 from random import shuffle, seed
 seed(123)
@@ -83,7 +86,7 @@ class Shunting:
             # print(f"faulty, siz, {siz}, to, {to}, len(s[to]), {len(s[to])},"
             #       f" (5 if to == B else 3), {SB if to == B else SC}, s[to], {s[to]} ")
             return
-        s[A], s[to] = a_plus_to[:siz], a_plus_to[siz:]
+        self.sections[A], self.sections[to] = a_plus_to[:siz], a_plus_to[siz:]
 
     def go(self, moves):
         """Recebe uma sequência de comados de mover
@@ -107,22 +110,35 @@ class Shunting:
         """
         moves = "b0 b1 c0 c1 c2 d0 d2".split()
         # moves = "b0 b1 b2 c0 c1 c2 d0 d1 d2".split()
+        prk = park or dict(self.sections)
         base = len(moves)
         tentativas = range(start, base**total)
         ordens = [base**order for order in range(total)]
-        print(f"tentativas {tentativas} ordens {ordens}")
+        print(f"tentativas {tentativas} ordens {ordens} park {prk}")
         maxi = 0
         for valor in tentativas:
-            self.park(park)
-            vec = [(valor // ordem) % 7 for ordem in ordens]
-            roteiro = "".join(moves[idx] for idx in vec)
+            # self.park(park)
+            self.sections = dict(prk)
+            # vec = [(valor // ordem) % 7 for ordem in ordens]
+            # roteiro = "".join(moves[idx] for idx in vec)
+            roteiro = "".join(moves[(valor // ordem) % 7] for ordem in ordens)
             fit = self.go(roteiro)
             if fit > maxi:
                 self.best = []
                 maxi = fit
             if fit >= maxi:
-                self.best.append((fit, valor, roteiro, self.sections))
+                self.best.append((fit, valor, roteiro, dict(self.sections), prk))
         [print(good) for good in self.best]
+
+
+def _main():
+    # (320, 70400, 'b1d0b1c0b1c2b0', {'A': [], 'B': [1, 2], 'C': [], 'D': [3]})
+    # (320, 105022, 'b1c0b1d0b1d2b0', {'A': [], 'B': [1, 2], 'C': [3], 'D': []})
+
+    shu = Shunting()
+    print(shu)
+    shu.go("b1c0b1d0b1c2b1")
+    print(shu)
 
 
 def main(tt=7):
@@ -130,7 +146,7 @@ def main(tt=7):
     # (320, 105022, 'b1c0b1d0b1d2b0', {'A': [], 'B': [1, 2], 'C': [3], 'D': []})
 
     shu = Shunting()
-    shu.park({'A': [], 'B': [1, 2], 'C': [3], 'D': []})
+    shu.park({'A': [1], 'B': [3], 'C': [], 'D': [2]})
     print(shu)
     # shu.go("b1d0b1c2b0d1b0")
     shu.self_go(total=tt)
@@ -155,6 +171,9 @@ def main_(tt=7):
 
 
 if __name__ == '__main__':
+    # 3515835, 'b1d0b1c0b1d2b1c2b0'
+    # 5130315, 'b1c0b1d0b1c2b1d2b0'
+    #  105022, 'b1c0b1d0b1d2b0'
     import timeit
-    result = timeit.timeit(stmt='main(9)', globals=globals(), number=1)
+    result = timeit.timeit(stmt='main(2)', globals=globals(), number=1)
     print(f"Execution time is {result} seconds")
