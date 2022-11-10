@@ -42,7 +42,7 @@ class html:
         return MagicMock()
 
 
-window = win = timer = ajax = worker = self = MMock()
+window = win = timer = ajax = worker = self = aio = MMock()
 html.__le__ = MagicMock()
 # window = win
 document = dom(pydiv=dom())

@@ -26,9 +26,10 @@ class Kwarwp:
     def __init__(self):
         self.root = document["pydiv"]
         self.root.html = ''
-        self.scenario, self.actor, self.x = None, None, 0
+        self.scenario, self.actor, self.x, self.y = None, None, 0, 0
         self.cena()
         self.ator()
+        self.cmd = dict(n=self.n, l=self.l, s=self.s, o=self.o)
         myWorker.send("4")
 
         @bind(self.scenario, "click")
@@ -49,6 +50,22 @@ class Kwarwp:
         self.actor = html.DIV(_actor, style=dict(position="absolute", left=0, top=0))
         _ = self.scenario <= self.actor
 
+    def n(self):
+        self.y = self.y - 10 if self.y >= 10 else 0
+        self.actor.style.top = f"{self.y}px"
+
+    def s(self):
+        self.y = self.y + 10 if self.y <= 650 else 0
+        self.actor.style.top = f"{self.y}px"
+
+    def l(self):
+        self.x = self.x - 10 if self.x >= 10 else 0
+        self.actor.style.left = f"{self.x}px"
+
+    def o(self):
+        self.x = self.x + 10 if self.x <= 1300 else 0
+        self.actor.style.top = f"{self.y}px"
+
     def vai(self, *_):
         self.x += 10
         self.actor.style.left = f"{self.x}px"
@@ -57,9 +74,9 @@ class Kwarwp:
 @bind(myWorker, "message")
 def parse(e):
     """Handles the messages sent by the worker."""
-    _ = e.data
-    print(_)
-    KW.vai()
+    cmd = e.data
+    print(cmd)
+    KW.cmd[cmd]()
 
 
 def main():
