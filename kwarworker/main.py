@@ -11,7 +11,8 @@
 Changelog
 ---------
 .. versionadded::    22.11a0
-        primeira versão.
+        primeira versão @22
+        adiciona botão passo a passo @22
 """
 import sys
 from browser import window, ajax, document, timer, run_script as python_runner
@@ -26,6 +27,7 @@ widget_code_lr = """
   <button class="script-button" id="run-%s" type="button">Executar</button>
   <button class="script-button" id="clear-%s" type="button">Limpar Console</button>
   <button class="script-button" id="reset-%s" type="button">Reiniciar</button>
+  <button class="script-button" id="step-%s" type="button">Passo</button>
 """
 
 widget_code_tb = """
@@ -37,6 +39,7 @@ widget_code_tb = """
   <button class="script-button" id="run-%s" type="button">Executar</button>
   <button class="script-button" id="clear-%s" type="button">Limpar Console</button>
   <button class="script-button" id="reset-%s" type="button">Reiniciar</button>
+  <button class="script-button" id="step-%s" type="button">Passo</button>
 """
 
 
@@ -74,9 +77,9 @@ class ScriptWidget:
         self.get_script(None) if script_name else None
 
         if "alignment" in params and params["alignment"] == 'top-bottom':
-            document[main_div_id].innerHTML = widget_code_tb % (m, m, m, m, m, m, m, m)
+            document[main_div_id].innerHTML = widget_code_tb % (m, m, m, m, m, m, m, m, m)
         else:
-            document[main_div_id].innerHTML = widget_code_lr % (m, m, m, m, m, m, m, m)
+            document[main_div_id].innerHTML = widget_code_lr % (m, m, m, m, m, m, m, m, m)
             if "editor_width" in params:
                 document[self.script_div_id].style.width = params["editor_width"]
 

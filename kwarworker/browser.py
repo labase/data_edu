@@ -28,6 +28,10 @@ class dom(dict):
         return MagicMock()
 
 
+class window:
+    ace = MMock()
+
+
 class html:
     DIV = MMock()
     IMG = MMock()
@@ -43,10 +47,7 @@ class html:
         return MagicMock()
 
 
-window = win = timer = ajax = worker = self = aio = _aio = bind = run_script = html.IMG = MMock()
-html.__le__ = MagicMock()
-html.IMG = MagicMock()
-# window = win
+timer = ajax = worker = self = aio = _aio = bind = run_script = html.IMG = MMock()
 document = dom(pydiv=dom())
 document.head = dom()
 html.DIV = html.STYLE = html.bind = html.H1 = html.H2 = html.A = html.CODE = html.PRE = html

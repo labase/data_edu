@@ -12,14 +12,14 @@ Changelog
 ---------
 .. versionadded::    22.11a0
         primeira versão.
-        coloca parsing dentro do Kwarwp init
+        coloca parsing dentro do Kwarwp init @17
+        adiciona passo a passo @22
 """
 from browser import bind, document, worker, html, aio
 
-# Create a web worker, identified by a script id in this page.
-# myWorker = worker.Worker("worker")
 IMG = "https://i.imgur.com/z7zIJHV.jpg"
 ACT = "https://i.imgur.com/ehoPNb1.png"
+SLEEP = 0.1
 
 
 class Kwarwp:
@@ -30,25 +30,27 @@ class Kwarwp:
         self.cena()
         self.ator()
         self.wk = worker.Worker(working)
-        self.cmd = dict(n=self.n, l=self.l, s=self.s, o=self.o)
+        self.cmd = dict(n=self.n, l=self.leste, s=self.s, o=self.oeste)
 
         @bind(self.wk, "message")
         def parsing(e):
             """Handles the messages sent by the worker."""
             cmd = e.data
             print("got cmd ", cmd)
-            # self.cmd[cmd]()
             aio.run(self.command(cmd))
 
     async def command(self, cmd):
-        await aio.sleep(2)
         self.cmd[cmd]()
 
     def go(self):
-        self.wk.send("_inicio_")
+        self.wk.send("_inicia_")
 
-    def done(self):
-        self.wk.send("done")
+    def done(self, cmd="done"):
+        async def _next():
+            await aio.event(document["step-pyedit"], "click")
+            self.wk.send(cmd)
+
+        aio.run(_next())
 
     def cena(self, img=IMG):
         self.scenario = html.DIV(html.IMG(src=img, width="1300px"), style=dict(position="absolute"))
@@ -58,7 +60,6 @@ class Kwarwp:
         class Ator:
             def __init__(self, elt):
                 self.elt = elt
-                # self.x, self.y = 0, 0
 
             @property
             def x(self):
@@ -107,4 +108,6 @@ class Kwarwp:
 
 
 def main():
-    return Kwarwp()
+    kwarwp = Kwarwp()
+    kwarwp.go()
+    return kwarwp

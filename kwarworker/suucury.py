@@ -11,7 +11,8 @@
 Changelog
 ---------
 .. versionadded::    22.11a0
-        primeira versão.
+        primeira versão @17
+        incorpora o método go nos comandos @22
 """
 from browser import bind, self as worker
 import aio
@@ -21,8 +22,9 @@ n, s, o, l, e = list("nsole")
 
 
 class Suucury:
-    def __init__(self, jogo=None):
+    def __init__(self):
         self._cmd = None
+        self.worker = worker
 
         @bind(worker, "message")
         def message(cmd):
@@ -37,24 +39,21 @@ class Suucury:
 
     async def go(self, cmd):
         worker.send(cmd)
-        await aio.event(worker, "message")
+        await aio.event(self.worker, "message")
 
     async def n(self):
-        worker.send(n)
-        await aio.event(worker, "message")
+        await self.go(n)
 
     async def s(self):
-        worker.send(s)
-        await aio.event(worker, "message")
+        await self.go(s)
 
     async def leste(self):
-        worker.send(l)
-        await aio.event(worker, "message")
+        await self.go(l)
 
     async def oeste(self):
-        self.go(o)
+        await self.go(o)
 
-    async def aguarda(self, esperado=2):
+    async def aguarda(self, esperado=0.1):
         await aio.sleep(esperado)
 
     async def espera(self, esperado):
