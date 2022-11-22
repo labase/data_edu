@@ -144,6 +144,10 @@ class ScriptWidget:
         editor.getSession().setMode("ace/mode/python")
 
     def get_script(self, _):
+        from model import Model
+        Model().get_file_contents(self.get_script_callback)
+
+    def get_script_(self, _):
         req = ajax.ajax()
         req.open('GET', self.script_path + self.script_name, True)
         req.set_header('content-type', "application/x-www-form-urlencoded;charset=UTF-8")
