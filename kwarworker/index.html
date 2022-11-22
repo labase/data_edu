@@ -5,18 +5,26 @@
     <title>Kwarwp with Worker</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="_static/main.css" type="text/css" />
     <style>
 body{
-    margin-left: 3em;
+    margin-left: 1em;
+    background-color: teal;
 }
 
     </style>
-    <script type="text/javascript" src="https://cdn.rawgit.com/brython-dev/brython/3.8.0/www/src/brython.js">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.11.0/brython.min.js">
     </script>
-    <script type="text/javascript" src="https://cdn.rawgit.com/brython-dev/brython/3.8.0/www/src/brython_stdlib.js">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.11.0/brython_stdlib.js">
+    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/ace.min.js">
+    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/mode-python.min.js">
+    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/theme-dracula.min.js">
     </script>
 
-    <script type="text/python" class="webworker" id="worker" src="kworker.py"></script>
+    <script type="text/python" class="webworker" id="worker" src="_code/ola.py"></script>
 
 </head>
 
@@ -31,12 +39,14 @@ body{
         Template("_version_").render(version="22.11a0")
         print("ok")
 
-        from kwarapp import main
+        # from kwarapp import main
+        from main import main
         main()
         print("ok ag")
 </script>
 
 <div id="_main_" style="position:relative; width:100%; height:100%;">
+    <div id="pyedit" style="margin: 0 auto; position:relative; top:0px;"></div>
     <div id="pydiv" style="margin: 0 auto; position:relative; top:0px;">
         <img src="https://i.imgur.com/z7zIJHV.jpg" alt="ALDEIA"
              style="width:100vw; height:100vh; object-fit: cover;"/>
@@ -46,7 +56,7 @@ body{
         </div>
     </div>
 </div>
-<div style="position:absolute; top:700px; left:2px; height: 10px;">
+<div style="position:relative; left:2px; height: 10px;">
     <p>
             <span id="_version_" style="color:#FFFFEE;font-size:8px;font-family:courier new,courier,monospace;">
                 {version}</span>

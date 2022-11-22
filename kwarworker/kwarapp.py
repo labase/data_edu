@@ -19,7 +19,6 @@ from browser import bind, document, worker, html
 myWorker = worker.Worker("worker")
 IMG = "https://i.imgur.com/z7zIJHV.jpg"
 ACT = "https://i.imgur.com/ehoPNb1.png"
-KW = None
 
 
 class Kwarwp:
@@ -29,8 +28,15 @@ class Kwarwp:
         self.scenario, self.actor, self.x, self.y = None, None, 0, 0
         self.cena()
         self.ator()
-        self.cmd = dict(n=self.n, l=self.l, s=self.s, o=self.o)
-        myWorker.send("4")
+        self.cmd = dict(n=self.n, l=self.leste, s=self.s, o=self.oeste, e=self.espera)
+        myWorker.send("_inicia_")
+
+        @bind(myWorker, "message")
+        def parse(e):
+            """Handles the messages sent by the worker."""
+            cmd = e.data
+            print(cmd)
+            self.cmd[cmd]()
 
         @bind(self.scenario, "click")
         def change(_):
@@ -46,39 +52,56 @@ class Kwarwp:
         _ = self.root <= self.scenario
 
     def ator(self, img=ACT):
+        class Ator:
+            def __init__(self, elt):
+                self.elt = elt
+                # self.x, self.y = 0, 0
+
+            @property
+            def x(self):
+                return self.elt.style.left
+
+            @x.setter
+            def x(self, x):
+                self.elt.style.left = x
+
+            @property
+            def y(self):
+                return self.elt.style.top
+
+            @y.setter
+            def y(self, y):
+                self.elt.style.top = y
+
         _actor = html.IMG(src=img, width="130px", style=dict(position="absolute", left=0, top=0))
         self.actor = html.DIV(_actor, style=dict(position="absolute", left=0, top=0))
         _ = self.scenario <= self.actor
+        return Ator(self.actor)
 
     def n(self):
         self.y = self.y - 10 if self.y >= 10 else 0
         self.actor.style.top = f"{self.y}px"
+        myWorker.send("n")
 
     def s(self):
         self.y = self.y + 10 if self.y <= 650 else 0
         self.actor.style.top = f"{self.y}px"
+        myWorker.send("n")
 
-    def l(self):
+    def oeste(self):
         self.x = self.x - 10 if self.x >= 10 else 0
         self.actor.style.left = f"{self.x}px"
+        myWorker.send("n")
 
-    def o(self):
+    def leste(self):
         self.x = self.x + 10 if self.x <= 1300 else 0
-        self.actor.style.top = f"{self.y}px"
+        self.actor.style.left = f"{self.x}px"
+        myWorker.send("n")
 
-    def vai(self, *_):
+    def espera(self, *_):
         self.x += 10
         self.actor.style.left = f"{self.x}px"
 
 
-@bind(myWorker, "message")
-def parse(e):
-    """Handles the messages sent by the worker."""
-    cmd = e.data
-    print(cmd)
-    KW.cmd[cmd]()
-
-
 def main():
-    global KW
-    KW = Kwarwp()
+    return Kwarwp()
