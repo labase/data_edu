@@ -30,7 +30,6 @@ class dom(dict):
 
 class html:
     DIV = MMock()
-    IMG = MMock()
 
     def __init__(self, *_, **__):
         self.value = ""

@@ -55,9 +55,31 @@ class Kwarwp:
         _ = self.root <= self.scenario
 
     def ator(self, img=ACT):
+        class Ator:
+            def __init__(self, elt):
+                self.elt = elt
+                # self.x, self.y = 0, 0
+
+            @property
+            def x(self):
+                return self.elt.style.left
+
+            @x.setter
+            def x(self, x):
+                self.elt.style.left = x
+
+            @property
+            def y(self):
+                return self.elt.style.top
+
+            @y.setter
+            def y(self, y):
+                self.elt.style.top = y
+
         _actor = html.IMG(src=img, width="130px", style=dict(position="absolute", left=0, top=0))
         self.actor = html.DIV(_actor, style=dict(position="absolute", left=0, top=0))
         _ = self.scenario <= self.actor
+        return Ator(self.actor)
 
     def n(self):
         self.y = self.y - 10 if self.y >= 10 else 0
@@ -69,21 +91,20 @@ class Kwarwp:
         self.actor.style.top = f"{self.y}px"
         self.done()
 
-    def l(self):
+    def oeste(self):
         self.x = self.x - 10 if self.x >= 10 else 0
         self.actor.style.left = f"{self.x}px"
         self.done()
 
-    def o(self):
+    def leste(self):
         self.x = self.x + 10 if self.x <= 1300 else 0
         self.actor.style.left = f"{self.x}px"
         self.done()
 
-    def vai(self, *_):
+    def espera(self, *_):
         self.x += 10
         self.actor.style.left = f"{self.x}px"
 
 
 def main():
-    kw = Kwarwp()
-    kw.go()
+    return Kwarwp()
