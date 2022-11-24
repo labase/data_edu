@@ -12,13 +12,14 @@ Changelog
 ---------
 .. versionadded::    22.11a0
         primeira versão @22
+        remove ltk @24
 """
 import json
 from base64 import decodebytes as dcd
 from datetime import datetime
+from ltk import LTK
 
 from browser import ajax
-LTK = "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"  # Labase 09-05-22
 TIMESTAMP = '@{:%Y-%m-%d %H:%M}'
 PR, PK, MD = "data_edu", "kwarworker/_code", "ola.py"
 
