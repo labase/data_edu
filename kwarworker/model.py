@@ -18,7 +18,7 @@ from base64 import decodebytes as dcd
 from datetime import datetime
 
 from browser import ajax
-LTK = ""  # Labase 09-05-22
+LTK = "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"  # Labase 09-05-22
 TIMESTAMP = '@{:%Y-%m-%d %H:%M}'
 PR, PK, MD = "data_edu", "kwarworker/_code", "ola.py"
 
@@ -48,7 +48,7 @@ class Github:
         req.set_header('content-type', "application/vnd.github+json;charset=UTF-8")
         req.set_header('authorization', f"labase {LTK}")
         req.bind('complete', complete)
-        req.send(data)
+        req.send(data) if data else req.send()
 
     def get_file_contents(self, path, callback):
         def complete(request):
