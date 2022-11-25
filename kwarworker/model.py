@@ -16,12 +16,13 @@ Changelog
 """
 import json
 from base64 import decodebytes as dcd
+import base64
 from datetime import datetime
 from ltk import LTK
 
 from browser import ajax
 TIMESTAMP = '@{:%Y-%m-%d %H:%M}'
-PR, PK, MD = "data_edu", "kwarworker/_code", "ola.py"
+PR, PK, MD = "data_edu", "kwarworker/_code", "master_ola.py"
 
 
 class Github:
@@ -59,19 +60,16 @@ class Github:
             missing_padding = 4 - len(text) % 4
             text = text + b'=' * missing_padding if missing_padding else text
             self.text = dcd(text).decode("utf-8")
-            # dcd(str.encode(op.environ[IKT"])).decode("utf-8")
+            print("complete", self.sha, self.text[-40:])
             callback(self)
         self.send_request(path, "GET", complete)
 
     def update_file(self, path, comment, decoded_content, callback=None):
-        def get(request):
-            data = dict(message=comment, content=decoded_content, sha=self.sha)
-            self.send_request(path, "POST", callback or (lambda *_: None), data)
-            text = str.encode(json.loads(request.text)['content'])
-            missing_padding = 4 - len(text) % 4
-            text = text + b'=' * missing_padding if missing_padding else text
-            self.text = dcd(text).decode("utf-8")
-            # dcd(str.encode(op.environ[IKT"])).decode("utf-8")
+        def get(_):
+            sh = '7d43eb2905d728cd66ff41cc097c3fbe29b351fe'
+            data = dict(message=comment, content=decoded_content, sha=sh)
+            print("update_file", path, self.sha, "PUT", callback, data)
+            self.send_request(path, "PUT", callback or (lambda *_: None), data)
         self.get_file_contents(path, get)
 
 
@@ -94,7 +92,17 @@ class Model:
         def do_save(_):
             timestamp = TIMESTAMP.format(datetime.now())
             _comment = comment if comment else "Saved {} {}".format(filename, timestamp)
-            self.repo.update_file("/{}".format(filename), _comment, decoded_content, callback=callback)
+            fmt = "{}" if filename.startswith('/') else "{}"
+            encodedBytes = base64.b64encode(decoded_content.encode("utf-8"))
+            encodedStr = str(encodedBytes, "utf-8")
+            print("do save", fmt, filename, fmt.format(filename))
+            # text = str.encode(decoded_content)
+            # missing_padding = 4 - len(text) % 4
+            # text = text + b'=' * missing_padding if missing_padding else text
+            # self.text = dcd(text).decode("utf-8")
+            # code = ecd(decoded_content)  # .decode("utf-8")
+
+            self.repo.update_file(fmt.format(filename), _comment, encodedStr, callback=callback)
 
         self.repo = self.user.get_repo(project)
         print("save_file ", project, filename)

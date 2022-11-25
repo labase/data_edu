@@ -13,11 +13,12 @@ Changelog
 .. versionadded::    22.11a0
         primeira versão @22
         adiciona botão passo a passo @22
+        adiciona botão executa @24
 """
 import sys
 from browser import window, ajax, document, timer, run_script as python_runner
 from kwarapp import main as k_main
-
+MOD = "master_ola.py"
 widget_code_lr = """
   <div class="script-title" id="title-%s"></div>
   <div class="script-container" id="script-container-%s">
@@ -126,15 +127,23 @@ class ScriptWidget:
     def clear_console(self, _):
         document[self.console_pre_id].innerHTML = ""
 
-    def run_script(self, _):
+    def run_script(self, *_):
+        def do_run(ct=''):
+            print("run_script do_run", ct.text)
+            from kwarapp import Kwarwp
+            Kwarwp().go()
+
+        def __(*_):
+            if self.name_to_run is None:
+                python_runner(editor.getValue())
+            else:
+                python_runner(editor.getValue(), self.name_to_run)
         editor = window.ace.edit(self.script_div_id)
         document[self.console_pre_id].style.color = "black"
         sys.stdout = self
         sys.stderr = ScriptStderr(self.console_pre_id)
-        if self.name_to_run is None:
-            python_runner(editor.getValue())
-        else:
-            python_runner(editor.getValue(), self.name_to_run)
+        from model import Model
+        Model().save_file(decoded_content=editor.getValue(), callback=do_run, moduler=MOD)
 
     def get_script_callback(self, request):
         editor = window.ace.edit(self.script_div_id)
@@ -145,7 +154,7 @@ class ScriptWidget:
 
     def get_script(self, _):
         from model import Model
-        Model().get_file_contents(self.get_script_callback)
+        Model().get_file_contents(self.get_script_callback, moduler=MOD)
 
     def get_script_(self, _):
         req = ajax.ajax()
@@ -156,6 +165,6 @@ class ScriptWidget:
 
 
 def main(pyed="pyedit"):
-    _ = ScriptWidget("ola.py", pyed, heigh=800, console_height=200, alignment="left-right", title="Olá, tribo!")
+    _ = ScriptWidget("master_ola.py", pyed, heigh=800, console_height=200, alignment="left-right", title="Olá, tribo!")
     # , editor_width=60)
     k_main()
