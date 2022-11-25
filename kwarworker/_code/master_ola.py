@@ -18,6 +18,10 @@ class Ola(suucury.Suucury):
         await self.leste()
         await self.leste()
         await self.leste()
+        await self.leste()
+        await self.leste()
+        await self.leste()
+        await self.leste()
 
 
 Ola()
