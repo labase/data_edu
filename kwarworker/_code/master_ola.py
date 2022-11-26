@@ -5,6 +5,7 @@
         primeira versão @24
 """
 import suucury
+from suucury import Sucury
 print("master ola")
 
 
