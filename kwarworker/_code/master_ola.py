@@ -20,4 +20,4 @@ class Ola(Suucury): #(suucury.Suucury):
         await self.leste()
 
 
-#Ola()
+Ola()
