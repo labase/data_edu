@@ -9,7 +9,7 @@ from suucury import Suucury
 print("master ola")
 
 
-class Ola: #(suucury.Suucury):
+class Ola(Suucury): #(suucury.Suucury):
     async def inicia_a_jornada(self):
         print("Master Ola inicia_a_jornada 1")
 
