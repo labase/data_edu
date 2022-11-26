@@ -11,7 +11,7 @@ print("master ola")
 
 class Ola(Suucury): #(suucury.Suucury):
     async def inicia_a_jornada(self):
-        print("Master Ola inicia_a_jornada 1")
+        print("Master Ola inicia_a_jornada 2")
 
         await self.leste()
         await self.leste()
