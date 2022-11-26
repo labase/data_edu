@@ -5,20 +5,16 @@
         primeira versão @24
 """
 import suucury
-from suucury import Suucury
 print("master ola")
 
 
-class Ola(Suucury): #(suucury.Suucury):
+class Ola(suucury.Suucury):
     async def inicia_a_jornada(self):
-        print("Master Ola inicia_a_jornada 2")
+        print("Master Ola inicia_a_jornada")
 
-        await self.leste()
-        await self.leste()
-        await self.s()
         await self.leste()
         await self.leste()
         await self.leste()
 
 
-Ola().go()
+Ola()

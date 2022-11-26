@@ -29,7 +29,6 @@ class Maestro:
             evt.data is the message body.
             """
             self._cmd = cmd.data
-            # print("Maestro message", self._cmd)
             aio.run(self.go(self._cmd))
             # aio.run(self.inicia_a_jornada()) if self._cmd == "_inicia_" else None
 
