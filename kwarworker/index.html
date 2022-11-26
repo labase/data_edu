@@ -29,10 +29,10 @@ body{
 
 <body onload="brython(1)">
     <script type="text/python">
-        # This file is part of  program LABASE
+        # This file is part of  program SuuCuriJuba
         # Copyright © 2022  Carlo Oliveira <carlo@nce.ufrj.br>,
-        # `Labase <http://labase.selfip.org/>`__; `GPL <http://is.gd/3Udt>`__.
-        # SPDX-License-Identifier: (GPLv3-or-later AND LGPL-2.0-only) WITH bison-exception
+        # `Labase <http://labase.selfip.org/>`__; `GPL-3 <https://bit.ly/gpl_v3>`__.
+        # SPDX-License-Identifier: (GPL-3.0-or-later AND LGPL-2.0-only) WITH bison-exception
         from browser import document, alert, html, window, ajax, timer, svg
         from browser.template import Template
         Template("_version_").render(version="22.11a0")
@@ -41,11 +41,11 @@ body{
 
         # from kwarapp import main
         # scpt = html.SCRIPT(type="text/python", Class="webworker", id="worker", src="_code/master_ola.py")
-        document["worker"].text= 'print("oi")'
+        # document["worker"].text= 'print("oi")'
         from main import main
-        idtimer = timer.set_timeout(lambda *_: main(), 3000)
-        # main()
-        print("ok ag")
+        # idtimer = timer.set_timeout(lambda *_: main(), 3000)
+        main()
+        print("página carregada")
 </script>
     <script type="text/python" class="webworker" id="worker" src="_code/master_ola.py"></script>
 
