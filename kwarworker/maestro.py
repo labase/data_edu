@@ -15,6 +15,7 @@ Changelog
 """
 from browser import bind, self as worker
 import aio
+print("Maestro")
 
 
 class Maestro:
@@ -34,3 +35,6 @@ class Maestro:
     async def go(self, cmd):
         self.worker.send(cmd)
         # await aio.event(self.worker, "message")
+
+
+Maestro()

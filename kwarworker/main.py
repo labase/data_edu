@@ -2,9 +2,9 @@
 # -*- coding: UTF8 -*-
 # Este arquivo é parte do programa SuuCuriJuba
 # Copyright © 2022  Carlo Oliveira <carlo@nce.ufrj.br>,
-# `LABASE <http://labase.selfip.org/>`__; `GPL <http://is.gd/3Udt>`__.
-# SPDX-License-Identifier: (GPLv3-or-later AND LGPL-2.0-only) WITH bison-exception
-"""Teste com worker para script controlando jogo.
+# `Labase <http://labase.selfip.org/>`__; `GPL-3 <https://bit.ly/gpl_v3>`__.
+# SPDX-License-Identifier: (GPL-3.0-or-later AND LGPL-2.0-only) WITH bison-exception
+"""Teste com worker para código controlando jogo.
 
 .. codeauthor:: Carlo Oliveira <carlo@nce.ufrj.br>
 
@@ -14,11 +14,18 @@ Changelog
         primeira versão @22
         adiciona botão passo a passo @22
         adiciona botão executa @24
+        melhora mensagem salvar, gpl atual @25
+
+.. versionadded::    22.11b0
+        executa da trilha principal @26
+
 """
+import json
 import sys
 from browser import window, ajax, document, timer, run_script as python_runner
 from kwarapp import main as k_main
 MOD = "master_ola.py"
+FROM_WORK = False
 widget_code_lr = """
   <div class="script-title" id="title-%s"></div>
   <div class="script-container" id="script-container-%s">
@@ -129,11 +136,12 @@ class ScriptWidget:
 
     def run_script(self, *_):
         def do_run(ct=''):
-            print("run_script do_run", ct.text)
+            msg = json.loads(ct.text)
+            print(msg['commit']['message'] if "commit" in msg else 'Falha no salvamento')
             from kwarapp import Kwarwp
             Kwarwp().go()
 
-        def __(*_):
+        def run_now(*_):
             if self.name_to_run is None:
                 python_runner(editor.getValue())
             else:
@@ -142,11 +150,16 @@ class ScriptWidget:
         document[self.console_pre_id].style.color = "black"
         sys.stdout = self
         sys.stderr = ScriptStderr(self.console_pre_id)
-        from model import Model
-        Model().save_file(decoded_content=editor.getValue(), callback=do_run, moduler=MOD)
+        if FROM_WORK:
+            callback = do_run
+            from model import Model
+            Model().save_file(decoded_content=editor.getValue(), callback=callback, moduler=MOD)
+        else:
+            run_now()
 
     def get_script_callback(self, request):
         editor = window.ace.edit(self.script_div_id)
+        # print(request.text)
         editor.setValue(request.text, -1)
         editor.setTheme("ace/theme/dracula")
         # editor.setTheme("ace/theme/solarized_light")

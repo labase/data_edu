@@ -2,8 +2,8 @@
 # -*- coding: UTF8 -*-
 # Este arquivo é parte do programa SuuCuriJuba
 # Copyright © 2022  Carlo Oliveira <carlo@nce.ufrj.br>,
-# `LABASE <http://labase.selfip.org/>`__; `GPL <http://is.gd/3Udt>`__.
-# SPDX-License-Identifier: (GPLv3-or-later AND LGPL-2.0-only) WITH bison-exception
+# `Labase <http://labase.selfip.org/>`__; `GPL-3 <https://bit.ly/gpl_v3>`__.
+# SPDX-License-Identifier: (GPL-3.0-or-later AND LGPL-2.0-only) WITH bison-exception
 """Lida com o gerenciamento de arquivos em vários locais.
 
 .. codeauthor:: Carlo Oliveira <carlo@nce.ufrj.br>
@@ -13,6 +13,7 @@ Changelog
 .. versionadded::    22.11a0
         primeira versão @22
         remove ltk @24
+        salva corretamente, gpl atual @25
 """
 import json
 from base64 import decodebytes as dcd
@@ -26,6 +27,8 @@ PR, PK, MD = "data_edu", "kwarworker/_code", "master_ola.py"
 
 
 class Github:
+    VSN = 0
+
     def __init__(self, token=None):
         self.text = ""
         self.sha = ""
@@ -45,10 +48,11 @@ class Github:
 
     def send_request(self, path, modo, complete, data=None):
         req = ajax.ajax()
-        print("send_request", self.rest.format(owner=self.user, repo=self.repo, path=path))
+        # print("send_request", self.rest.format(owner=self.user, repo=self.repo, path=path))
         req.open(modo, self.rest.format(owner=self.user, repo=self.repo, path=path), True)
-        req.set_header('content-type', "application/vnd.github+json;charset=UTF-8")
-        req.set_header('authorization', f"labase {LTK}")
+        # req.set_header('content-type', "application/vnd.github+json;charset=UTF-8")
+        req.set_header('accept', "application/vnd.github+json")
+        req.set_header('authorization', f"token {LTK}")
         req.bind('complete', complete)
         req.send(data) if data else req.send()
 
@@ -56,19 +60,30 @@ class Github:
         def complete(request):
             text = json.loads(request.text)
             self.sha = text['sha']
-            text = str.encode(text['content'])
-            missing_padding = 4 - len(text) % 4
-            text = text + b'=' * missing_padding if missing_padding else text
-            self.text = dcd(text).decode("utf-8")
-            print("complete", self.sha, self.text[-40:])
+            text = text['content'].replace("\n", '')
+            text = str.encode(text)
+            text = text + b'===='
+            lens = len(text)
+            lens = lens - (lens % 4 if lens % 4 else 4)
+            self.text = base64.b64decode(text[:lens]).decode("utf-8")
+            # print("complete", self.sha, self.text[-40:])
             callback(self)
         self.send_request(path, "GET", complete)
 
+    def update_file_(self, path, comment, decoded_content, callback=None):
+        Github.VSN += 1
+        path += f"{Github.VSN}"
+        data = dict(message=comment, content=decoded_content)
+        data = json.dumps(data)
+        # print("update_file", path, self.sha, "PUT", callback, data)
+        self.send_request(path, "PUT", callback or (lambda *_: None), data)
+
     def update_file(self, path, comment, decoded_content, callback=None):
         def get(_):
-            sh = '7d43eb2905d728cd66ff41cc097c3fbe29b351fe'
-            data = dict(message=comment, content=decoded_content, sha=sh)
-            print("update_file", path, self.sha, "PUT", callback, data)
+            # sh = '7d43eb2905d728cd66ff41cc097c3fbe29b351fe'
+            data = dict(message=comment, content=decoded_content, sha=self.sha)
+            # print("update_file", path, self.sha, "PUT", callback, data)
+            data = json.dumps(data)
             self.send_request(path, "PUT", callback or (lambda *_: None), data)
         self.get_file_contents(path, get)
 
@@ -82,7 +97,7 @@ class Model:
     def get_file_contents(self, callback, project=PR, packager=PK, moduler=MD):
         self.repo = self.user.get_repo(project)
         path = "{}/{}" if packager else "{}{}"
-        print("get_file_contents ", project, path.format(packager, moduler))
+        # print("get_file_contents ", project, path.format(packager, moduler))
         return self.repo.get_file_contents(path.format(packager, moduler), callback)
 
     def save_file(self, decoded_content, project=PR, packager=PK, moduler=MD, comment=None, callback=None):
@@ -95,16 +110,10 @@ class Model:
             fmt = "{}" if filename.startswith('/') else "{}"
             encodedBytes = base64.b64encode(decoded_content.encode("utf-8"))
             encodedStr = str(encodedBytes, "utf-8")
-            print("do save", fmt, filename, fmt.format(filename))
-            # text = str.encode(decoded_content)
-            # missing_padding = 4 - len(text) % 4
-            # text = text + b'=' * missing_padding if missing_padding else text
-            # self.text = dcd(text).decode("utf-8")
-            # code = ecd(decoded_content)  # .decode("utf-8")
-
+            # print("do save", fmt, filename, fmt.format(filename))
             self.repo.update_file(fmt.format(filename), _comment, encodedStr, callback=callback)
 
         self.repo = self.user.get_repo(project)
-        print("save_file ", project, filename)
+        # print("save_file ", project, filename)
         self.repo.get_file_contents(filename, do_save)
         return comment
