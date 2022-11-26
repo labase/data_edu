@@ -2,8 +2,8 @@
 # -*- coding: UTF8 -*-
 # Este arquivo é parte do programa SuuCuriJuba
 # Copyright © 2022  Carlo Oliveira <carlo@nce.ufrj.br>,
-# `LABASE <http://labase.selfip.org/>`__; `GPL <http://is.gd/3Udt>`__.
-# SPDX-License-Identifier: (GPLv3-or-later AND LGPL-2.0-only) WITH bison-exception
+# `Labase <http://labase.selfip.org/>`__; `GPL-3 <https://bit.ly/gpl_v3>`__.
+# SPDX-License-Identifier: (GPL-3.0-or-later AND LGPL-2.0-only) WITH bison-exception
 """Teste com worker para script controlando jogo.
 
 .. codeauthor:: Carlo Oliveira <carlo@nce.ufrj.br>
@@ -13,45 +13,59 @@ Changelog
 .. versionadded::    22.11a0
         primeira versão @17
         incorpora o método go nos comandos @22
+
+.. versionadded::    22.11b0
+        reformula para controle da trilha principal @26
 """
-from browser import bind, self as worker
+from browser import bind, worker, document
 import aio
-IMG = "https://i.imgur.com/z7zIJHV.jpg"
-ACT = "https://i.imgur.com/ehoPNb1.png"
+from kwarapp import Kwarwp
 n, s, o, l, e = list("nsole")
 
 
-class Suucury:
-    def __init__(self):
+class Suucury(Kwarwp):
+    def __init__(self, working="worker"):
+        super().__init__(working)
         self._cmd = None
-        self.worker = worker
+        self.worker = self.wk  # worker.Worker(working)
+        # print("Suucury __init__", self.wk)
 
-        @bind(worker, "message")
+        @bind(self.worker, "message")
         def message(cmd):
-            """Handle a message sent by the main script.
+            """Handle a message sent by the worker thread.
             evt.data is the message body.
             """
             self._cmd = cmd.data
+            # print("Suucury __init__ message", self._cmd)
             aio.run(self.inicia_a_jornada()) if self._cmd == "_inicia_" else None
 
     async def inicia_a_jornada(self):
         pass
 
-    async def go(self, cmd):
-        worker.send(cmd)
+    def done_(self, cmd="done"):
+        async def _next():
+            await aio.event(document["step-pyedit"], "click")
+            self.wk.send(cmd)
+        aio.run(_next())
+
+    async def did(self, *_):
         await aio.event(self.worker, "message")
 
     async def n(self):
-        await self.go(n)
+        super().n()
+        await self.did(n)
 
     async def s(self):
-        await self.go(s)
+        super().s()
+        await self.did(s)
 
     async def leste(self):
-        await self.go(l)
+        super().leste()
+        await self.did(l)
 
     async def oeste(self):
-        await self.go(o)
+        super().oeste()
+        await self.did(o)
 
     async def aguarda(self, esperado=0.1):
         await aio.sleep(esperado)

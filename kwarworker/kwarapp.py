@@ -2,8 +2,8 @@
 # -*- coding: UTF8 -*-
 # Este arquivo é parte do programa SuuCuriJuba
 # Copyright © 2022  Carlo Oliveira <carlo@nce.ufrj.br>,
-# `LABASE <http://labase.selfip.org/>`__; `GPL <http://is.gd/3Udt>`__.
-# SPDX-License-Identifier: (GPLv3-or-later AND LGPL-2.0-only) WITH bison-exception
+# `Labase <http://labase.selfip.org/>`__; `GPL-3 <https://bit.ly/gpl_v3>`__.
+# SPDX-License-Identifier: (GPL-3.0-or-later AND LGPL-2.0-only) WITH bison-exception
 """Teste com worker para script controlando jogo.
 
 .. codeauthor:: Carlo Oliveira <carlo@nce.ufrj.br>
@@ -14,12 +14,16 @@ Changelog
         primeira versão.
         coloca parsing dentro do Kwarwp init @17
         adiciona passo a passo @22
+
+.. versionadded::    22.11b0
+        move trabalhador para constante @26
 """
 from browser import bind, document, worker, html, aio
 
 IMG = "https://i.imgur.com/z7zIJHV.jpg"
 ACT = "https://i.imgur.com/ehoPNb1.png"
 SLEEP = 0.1
+WK = worker.Worker("worker")
 
 
 class Kwarwp:
@@ -29,20 +33,24 @@ class Kwarwp:
         self.scenario, self.actor, self.x, self.y = None, None, 0, 0
         self.cena()
         self.ator()
-        self.wk = worker.Worker(working)
-        self.cmd = dict(n=self.n, l=self.leste, s=self.s, o=self.oeste)
+        self.wk = WK
+        self.cmd = dict(n=self.n, l=self.leste, s=self.s, o=self.oeste, _inicia_=self.nop, done=self.nop)
 
         @bind(self.wk, "message")
         def parsing(e):
             """Handles the messages sent by the worker."""
             cmd = e.data
-            print("got cmd ", cmd)
+            # print("got cmd ", cmd)
             aio.run(self.command(cmd))
 
     async def command(self, cmd):
-        self.cmd[cmd]()
+        self.cmd[cmd]() if cmd in self.cmd else None
+
+    def nop(self, *_):
+        pass
 
     def go(self):
+        # print("go cmd ", self.wk)
         self.wk.send("_inicia_")
 
     def done(self, cmd="done"):
