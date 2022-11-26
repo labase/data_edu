@@ -4,7 +4,7 @@
 .. versionadded::    22.11a0
         primeira versão @24
 """
-#import suucury
+import suucury
 print("master ola")
 
 
