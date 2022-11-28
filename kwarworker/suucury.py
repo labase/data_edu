@@ -16,16 +16,17 @@ Changelog
 
 .. versionadded::    22.11b0
         reformula para controle da trilha principal @26
+        reformula para suporte ao NPC @28
 """
 from browser import bind, worker, document
 import aio
-from kwarapp import Kwarwp
+from kwarapp import Ator
 n, s, o, l, e = list("nsole")
 
 
-class Suucury(Kwarwp):
-    def __init__(self, working="worker"):
-        super().__init__(working)
+class Suucury(Ator):
+    def __init__(self):
+        super().__init__()
         self._cmd = None
         self.worker = self.wk  # worker.Worker(working)
         # print("Suucury __init__", self.wk)
@@ -51,12 +52,12 @@ class Suucury(Kwarwp):
     async def did(self, *_):
         await aio.event(self.worker, "message")
 
-    async def n(self):
-        super().n()
+    async def norte(self):
+        super().norte()
         await self.did(n)
 
-    async def s(self):
-        super().s()
+    async def sul(self):
+        super().sul()
         await self.did(s)
 
     async def leste(self):
