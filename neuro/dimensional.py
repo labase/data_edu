@@ -59,10 +59,35 @@ class Dimension:
         row_span[5][0] = 5
         for lc, line in enumerate(self.raw_csv[6:16]):
             r0 = r()
-            _ = [r0 <= d(cl, Id=f"md{lc}_{ct}", bgcolor=cc, rowspan=row_span[lc][ct])
+            _ = [r0 <= d(w.A(cl, href=f"#{cl}") if "FEM" in cl else cl, Id=f"md{lc}_{ct}", bgcolor=cc, rowspan=row_span[lc][ct])
                  for ct, cc, cl in zip(cnt, cartesians[row_clip[lc]:], line[row_clip[lc]:])]
             _ = tb <= r0
         self.document["md0_0"].rowspan = 10
+        _ = self.table <= self.page()
+
+    def page(self, sub=1, alone=False):
+        def item(iid, elt):
+            a = w.A(Id=iid)
+            _ = a <= w.H2(self.casa[iid])
+            _ = elt <= a
+            _ = elt <= w.P("Lorem Ipsum")
+
+        w = self.html
+        hd = self.raw_csv[5][sub+3].split(' (')[0]
+        head = f"Filogênese-Escrita-{hd}"
+        dv = w.DIV()
+        if alone:
+            ht = w.HTML()
+            _ = ht <= w.TITLE(head)
+            bd = w.BODY()
+            _ = ht <= bd
+            _ = bd <= dv
+        _ = dv <= w.H1(head)
+        for lc, line in enumerate(self.raw_csv[6:16]):
+            item(line[sub+3], dv)
+        # with open(f"var/{hfile}", 'w') as file:
+        #     file.write(ht.html)
+        return dv
 
 
 def main(document, html):
