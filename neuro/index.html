@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modelo Dimensional</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="_static/main.css" type="text/css" />
+    <style>
+body{
+    margin-left: 1em;
+    background-color: grey;
+}
+
+    </style>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.11.0/brython.min.js">
+    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.11.0/brython_stdlib.js">
+    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/ace.min.js">
+    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/mode-python.min.js">
+    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.13.1/theme-dracula.min.js">
+    </script>
+
+
+</head>
+
+<body onload="brython(1)">
+    <script type="text/python">
+        # This file is part of  program SuuCuriJuba
+        # Copyright © 2022  Carlo Oliveira <carlo@nce.ufrj.br>,
+        # `Labase <http://labase.selfip.org/>`__; `GPL-3 <https://bit.ly/gpl_v3>`__.
+        # SPDX-License-Identifier: (GPL-3.0-or-later AND LGPL-2.0-only) WITH bison-exception
+        # .. versionadded::    22.11b1
+        from browser import document, alert, html, window, ajax, timer, svg
+        from browser.template import Template
+        from dimensional import main
+        Template("_version_").render(version="22.11b0")
+        print("carregando página")
+
+        main(document, html)
+        print("página carregada")
+</script>
+
+    <div id="_main_" style="position:relative; width:100%; height:100%;">
+        <div id="pydiv" style="margin: 0 auto; position:relative; top:0px;">
+            <img src="https://i.imgur.com/nxhDxga.jpg" alt="EM CONSTRUÇÃO"
+                 style="width:100vw; height:100vh; object-fit: cover;"/>
+            <div style="position: absolute; top: 50%; left: 50%; opacity:0.3;
+                margin-top: -100px; margin-left: -100px; width: 200px; height: 200px;">
+                <img src="https://imgur.com/uc56UAq.gif" width="200px" alt="LOADING" style=""/>
+            </div>
+        </div>
+    </div>
+    <div style="position:relative; left:2px; height: 10px;">
+        <p>
+                <span id="_version_" style="color:#FFFFEE;font-size:8px;font-family:courier new,courier,monospace;">
+                    {version}</span>
+        </p>
+    </div>
+
+</body>
+</html>
