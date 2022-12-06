@@ -59,7 +59,8 @@ class Dimension:
         row_span[5][0] = 5
         for lc, line in enumerate(self.raw_csv[6:16]):
             r0 = r()
-            _ = [r0 <= d(w.A(cl, href=f"#{cl}") if "FEM" in cl else cl, Id=f"md{lc}_{ct}", bgcolor=cc, rowspan=row_span[lc][ct])
+            _ = [r0 <= d(
+                w.A(cl, href=f"#{cl}") if "FEM" in cl else cl, Id=f"md{lc}_{ct}", bgcolor=cc, rowspan=row_span[lc][ct])
                  for ct, cc, cl in zip(cnt, cartesians[row_clip[lc]:], line[row_clip[lc]:])]
             _ = tb <= r0
         self.document["md0_0"].rowspan = 10
@@ -90,10 +91,55 @@ class Dimension:
         return dv
 
 
+class Duck:
+    def __init__(self, query):
+        from urllib.parse import quote_plus, quote
+        link_params = {'q': query, 'format': "json"}
+        # self.url = f"https://api.duckduckgo.com/?t=ffab&q={quote_plus(query)}&format=json&ia=web"
+        # self.url = f"https://api.duckduckgo.com/html/?q={quote_plus(query)}"
+        self.url = f"https://api.duckduckgo.com/html/?q={quote(query)}&format=json"
+        print(self.url)
+
+    def vai(self):
+        import urllib.request
+        fp = urllib.request.urlopen(self.url)
+        mybytes = fp.read()
+
+        mystr = mybytes.decode("utf8")
+        fp.close()
+
+        # print(mystr)
+        self.parse(mystr)
+
+    def parse(self, data):
+        from bs4 import BeautifulSoup
+
+        parsed = BeautifulSoup(data, features="lxml")
+        # topics = parsed.findAll('div', {'id': 'zero_click_topics'})[0]
+        # topics = parsed.findAll('div', {'id': 'links'})[0]
+        # results = topics.findAll('div', {'class': re.compile('results_*')})
+        # results = topics.findAll('div', {'class': 'results_snippet'})
+        # results = parsed.findAll('div', {'class': 'result_snippet'})
+        titles = parsed.findAll('a', {'class': 'result__a'})
+        results = parsed.findAll('a', {'class': 'result__snippet'})
+
+        [print(f"[{title.text[:20]}]", result.text[:250]) for title, result in zip(titles, results)]
+
+    def vai_(self):
+        from browser import ajax
+
+        def read(req):
+            print(req)
+        print("vai", self.url)
+
+        ajax.get(self.url, oncomplete=read)
+
+
 def main(document, html):
     cfile = "http://localhost:8000/PRE-CRIVO.csv"
     Dimension(document, html, cfile).vai()
 
 
 if __name__ == '__main__':
-    Dimension()
+    # Duck("Memória e Produção Escrita").vai()
+    Duck('Memória Linguagem').vai()
