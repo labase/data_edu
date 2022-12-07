@@ -12,34 +12,45 @@ Changelog
 ---------
 .. versionadded::    22.12a0
         primeira versão @05
+        com resultados das pesquisas @07
 """
+import json
+from csv import writer
 from csv import reader
+from time import sleep
+RATE = 4
+
 BD, BL, DG, GG, LG, HB, DB, BB, LB, CC = "0066cc 93cddd 4f6228 77933c c3d69b 984807 e46c0a f79646 fac090 cccccc".split()
 
 
 class Dimension:
-    def __init__(self, document=None, html=None, csv="/home/carlo/Downloads/PRE-CRIVO.csv"):
+    def __init__(self, document=None, html=None, csv="PRE-CRIVO.csv", page=""):
         self.document, self.html = document, html
-        self.table = self.document["pydiv"]
+        self.table = None
         self.raw_csv = []
         self.casa = {}
         with open(csv, 'r') as file:
             _reader = reader(file)
             for each_row in _reader:
                 self.raw_csv.append(each_row)
-                print(each_row)
+                # print(each_row)
+        self.casa = {line[0]: line[1] for line in self.raw_csv if line[0].startswith("FEM")}
+        if not page:
+            return
+        with open(page, 'r') as file:
+            self.page_data = json.load(fp=file)
+            print(self.page_data.keys())
 
     def vai(self):
+        self.table = self.document["pydiv"]
         w, r, d, h = self.html, self.html.TR, self.html.TD, self.html.TH
         spn = len(self.raw_csv[5])
         cartesians = [DB, BB, LB] + (spn-3)*[CC]
-        self.casa = {line[0]: line[1] for line in self.raw_csv if line[0].startswith("FEM")}
         # print(self.casa)
         self.table.html = ""
         _ = self.table <= (tb := w.TABLE())
         _ = tb <= r(h("FILO", colspan=spn, bgcolor=BD))
         _ = tb <= r(h("Escrita", colspan=spn, bgcolor=BL))
-        # _ = tb <= r("Escrita", bgcolor=BL)
         r0 = r()
         _ = [r0 <= (h(cl, bgcolor=DG, colspan=spn-3) if cl != " " else d(cl)) for cl in " , , ,Micro".split(",")]
         _ = tb <= r0
@@ -66,12 +77,21 @@ class Dimension:
         self.document["md0_0"].rowspan = 10
         _ = self.table <= self.page()
 
-    def page(self, sub=1, alone=False):
+    def page(self, sub=0, alone=False):
+        def refer(elt, url, tit, abs):
+            _ = elt <= w.A(tit, href=url)
+            _ = elt <= w.P(abs)
+
         def item(iid, elt):
             a = w.A(Id=iid)
-            _ = a <= w.H2(self.casa[iid])
+            title = self.casa[iid]
+            _ = a <= w.H2(title)
             _ = elt <= a
-            _ = elt <= w.P("Lorem Ipsum")
+            if title in self.page_data:
+                entries = self.page_data[title]
+                [refer(elt, **entry) for entry in entries]
+            else:
+                _ = elt <= w.P("Lorem Ipsum")
 
         w = self.html
         hd = self.raw_csv[5][sub+3].split(' (')[0]
@@ -86,44 +106,70 @@ class Dimension:
         _ = dv <= w.H1(head)
         for lc, line in enumerate(self.raw_csv[6:16]):
             item(line[sub+3], dv)
-        # with open(f"var/{hfile}", 'w') as file:
-        #     file.write(ht.html)
         return dv
 
 
 class Duck:
-    def __init__(self, query):
-        from urllib.parse import quote_plus, quote
-        link_params = {'q': query, 'format': "json"}
-        # self.url = f"https://api.duckduckgo.com/?t=ffab&q={quote_plus(query)}&format=json&ia=web"
-        # self.url = f"https://api.duckduckgo.com/html/?q={quote_plus(query)}"
-        self.url = f"https://api.duckduckgo.com/html/?q={quote(query)}&format=json"
+    def __init__(self, query, file="test", fold="var/"):
+        self.query, self.file, self.fold = query, file, fold
+        self.file = f'{self.fold}{self.file.replace(" ", "_")}.json'
+
+        self.result = []
+        self.page = {}
+        self.url = "https://duckduckgo.com/html/?q={}&format=json"
+        # self.url = "https://api.duckduckgo.com/html/?q={}&format=json"
         print(self.url)
 
-    def vai(self):
+    def pager(self, query_list):
+        def do_query(query):
+            self.vai(query=query)
+            sleep(RATE)
+        [do_query(query) for query in query_list]
+
+    def vai(self, query):
+        from urllib.parse import quote
         import urllib.request
-        fp = urllib.request.urlopen(self.url)
-        mybytes = fp.read()
+        self.query = query
+        url = self.url.format(quote(query))
+        print("vai: ", url)
+        with urllib.request.urlopen(url) as response:
+            html_result = response.read()
 
-        mystr = mybytes.decode("utf8")
-        fp.close()
-
-        # print(mystr)
-        self.parse(mystr)
+            html_result = html_result.decode("utf8")
+            # print(html_result)
+            self.parse(html_result)
 
     def parse(self, data):
         from bs4 import BeautifulSoup
+        resulted = []
 
         parsed = BeautifulSoup(data, features="lxml")
-        # topics = parsed.findAll('div', {'id': 'zero_click_topics'})[0]
-        # topics = parsed.findAll('div', {'id': 'links'})[0]
-        # results = topics.findAll('div', {'class': re.compile('results_*')})
-        # results = topics.findAll('div', {'class': 'results_snippet'})
-        # results = parsed.findAll('div', {'class': 'result_snippet'})
         titles = parsed.findAll('a', {'class': 'result__a'})
         results = parsed.findAll('a', {'class': 'result__snippet'})
+        links = parsed.findAll('a', {'class': 'result__url'})
+        filename = f'{self.fold}{self.file.replace(" ", "_")}.json'
+        # filename = f'{self.fold}{self.query.replace(" ", "_")}.csv'
+        print(filename)
 
-        [print(f"[{title.text[:20]}]", result.text[:250]) for title, result in zip(titles, results)]
+        [resulted.append(dict(url=f"{link.text.strip()}", tit=f"{title.text}", abs=result.text))
+         for link, title, result in zip(links, titles, results)]
+        # [print(f"[{link.text.strip()[:100]}]", f"[{title.text[:20]}]", result.text[:250])
+        #  for link, title, result in zip(links, titles, results)]
+        self.page[self.query] = resulted
+        print(resulted)
+
+    def save(self, csv="", data=None):
+        import json
+        csv = csv or self.file
+        data = data or self.page
+        with open(csv, 'w+', newline='') as file:
+            json.dump(data, file)
+
+    def save_(self, csv, data=None):
+        data = data or self.result
+        with open(csv, 'w+', newline='') as file:
+            _writer = writer(file, delimiter='|', quotechar='"', dialect='unix')
+            _writer.writerows(data)
 
     def vai_(self):
         from browser import ajax
@@ -137,9 +183,18 @@ class Duck:
 
 def main(document, html):
     cfile = "http://localhost:8000/PRE-CRIVO.csv"
-    Dimension(document, html, cfile).vai()
+    cpage = "http://localhost:8000/var/Linguagens.json"
+    Dimension(document, html, cfile, cpage).vai()
 
 
 if __name__ == '__main__':
     # Duck("Memória e Produção Escrita").vai()
-    Duck('Memória Linguagem').vai()
+    dm = Dimension()
+    coluna = 4
+    print(dm.raw_csv[5])
+    [print(dm.casa[key[coluna]]) for key in dm.raw_csv[6:16]]
+    query_list_ = [dm.casa[key[coluna]] for key in dm.raw_csv[6:16]]
+    duck = Duck("Memória", file="Memoria")
+    duck.pager(query_list=query_list_)
+    duck.save()
+    # Duck('Memória Linguagem').vai('Memória Linguagem')
