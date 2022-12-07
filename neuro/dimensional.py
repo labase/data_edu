@@ -19,6 +19,7 @@ from csv import writer
 from csv import reader
 from time import sleep
 RATE = 4
+HTTP = "http://"
 
 BD, BL, DG, GG, LG, HB, DB, BB, LB, CC = "0066cc 93cddd 4f6228 77933c c3d69b 984807 e46c0a f79646 fac090 cccccc".split()
 
@@ -78,9 +79,9 @@ class Dimension:
         _ = self.table <= self.page()
 
     def page(self, sub=0, alone=False):
-        def refer(elt, url, tit, abs):
-            _ = elt <= w.A(tit, href=url)
-            _ = elt <= w.P(abs)
+        def refer(elt, url, tit, abt):
+            _ = elt <= w.A(tit, href=f"{HTTP}{url}")
+            _ = elt <= w.P(abt)
 
         def item(iid, elt):
             a = w.A(Id=iid)
@@ -151,7 +152,7 @@ class Duck:
         # filename = f'{self.fold}{self.query.replace(" ", "_")}.csv'
         print(filename)
 
-        [resulted.append(dict(url=f"{link.text.strip()}", tit=f"{title.text}", abs=result.text))
+        [resulted.append(dict(url=f"{link.text.strip()}", tit=f"{title.text}", abt=result.text))
          for link, title, result in zip(links, titles, results)]
         # [print(f"[{link.text.strip()[:100]}]", f"[{title.text[:20]}]", result.text[:250])
         #  for link, title, result in zip(links, titles, results)]
@@ -181,16 +182,37 @@ class Duck:
         ajax.get(self.url, oncomplete=read)
 
 
+def spl():
+    # require: pip install splinter[selenium3]
+    from splinter import Browser
+    from ltk import AUT
+
+    browser = Browser('firefox', headless=True)
+    browser.visit('https://activufrj.nce.ufrj.br/')
+    browser.find_by_name('user').fill(AUT['user'])
+    browser.find_by_name('passwd').fill(AUT['passwd'])
+    browser.find_by_css('button').first.click()
+    cookies = browser.cookies.all()
+    print(cookies)
+    # browser.find_by_name('btnK')
+
+    if browser.is_text_present('Carlo Emmanoel Tolla de Oliveira'):
+        print("Yes, the official website was found!")
+    else:
+        print("No, it wasn't found... We need to improve our SEO techniques")
+
+    browser.quit()
+
+
 def main(document, html):
     cfile = "http://localhost:8000/PRE-CRIVO.csv"
     cpage = "http://localhost:8000/var/Linguagens.json"
     Dimension(document, html, cfile, cpage).vai()
 
 
-if __name__ == '__main__':
-    # Duck("Memória e Produção Escrita").vai()
+def ducker(coluna = 4):
     dm = Dimension()
-    coluna = 4
+
     print(dm.raw_csv[5])
     [print(dm.casa[key[coluna]]) for key in dm.raw_csv[6:16]]
     query_list_ = [dm.casa[key[coluna]] for key in dm.raw_csv[6:16]]
@@ -198,3 +220,7 @@ if __name__ == '__main__':
     duck.pager(query_list=query_list_)
     duck.save()
     # Duck('Memória Linguagem').vai('Memória Linguagem')
+
+
+if __name__ == '__main__':
+    spl()
