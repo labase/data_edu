@@ -20,6 +20,7 @@ from csv import reader
 from time import sleep
 RATE = 4
 HTTP = "http://"
+SUB_DIMENSION = 1
 
 BD, BL, DG, GG, LG, HB, DB, BB, LB, CC = "0066cc 93cddd 4f6228 77933c c3d69b 984807 e46c0a f79646 fac090 cccccc".split()
 
@@ -78,7 +79,7 @@ class Dimension:
         self.document["md0_0"].rowspan = 10
         _ = self.table <= self.page()
 
-    def page(self, sub=0, alone=False):
+    def page(self, sub=SUB_DIMENSION, alone=False):
         def refer(elt, url, tit, abt):
             _ = elt <= w.A(tit, href=f"{HTTP}{url}")
             _ = elt <= w.P(abt)
@@ -173,13 +174,14 @@ class Duck:
             _writer.writerows(data)
 
     def vai_(self):
-        from browser import ajax
+        # from browser import ajax
 
         def read(req):
             print(req)
         print("vai", self.url)
+        read(0)  # fake
 
-        ajax.get(self.url, oncomplete=read)
+        # ajax.get(self.url, oncomplete=read)
 
 
 def spl():
@@ -206,11 +208,11 @@ def spl():
 
 def main(document, html):
     cfile = "http://localhost:8000/PRE-CRIVO.csv"
-    cpage = "http://localhost:8000/var/Linguagens.json"
+    cpage = "http://localhost:8000/var/Memoria.json"
     Dimension(document, html, cfile, cpage).vai()
 
 
-def ducker(coluna = 4):
+def ducker(coluna=4):
     dm = Dimension()
 
     print(dm.raw_csv[5])
@@ -223,4 +225,4 @@ def ducker(coluna = 4):
 
 
 if __name__ == '__main__':
-    spl()
+    ducker()
