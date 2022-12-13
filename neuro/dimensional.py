@@ -184,24 +184,38 @@ class Duck:
         # ajax.get(self.url, oncomplete=read)
 
 
-def spl():
+def splinter_new_page():
     # require: pip install splinter[selenium3]
     from splinter import Browser
     from ltk import AUT
-
-    browser = Browser('firefox', headless=True)
+    from selenium import webdriver
+    from uuid import uuid4
+    caps = webdriver.DesiredCapabilities.CHROME.copy()
+    caps['acceptInsecureCerts'] = True
+    # browser = Browser('firefox')  # , headless=True)cr
+    # browser = Browser('chrome', options={"acceptInsecureCerts": True})  # , headless=True)
+    browser = Browser('chrome', desired_capabilities=caps)  # , headless=True)
+    # return
     browser.visit('https://activufrj.nce.ufrj.br/')
     browser.find_by_name('user').fill(AUT['user'])
     browser.find_by_name('passwd').fill(AUT['passwd'])
     browser.find_by_css('button').first.click()
     cookies = browser.cookies.all()
     print(cookies)
-    # browser.find_by_name('btnK')
 
     if browser.is_text_present('Carlo Emmanoel Tolla de Oliveira'):
         print("Yes, the official website was found!")
     else:
         print("No, it wasn't found... We need to improve our SEO techniques")
+    page_name = f'Splinter_page_{str(uuid4())[-4:]}'
+    browser.visit('https://activufrj.nce.ufrj.br/wiki/newpage/carlo?folder=5db0e33e9f4a4b6bb91c381032ac300d')
+    browser.find_by_name('nomepag').fill(page_name)
+    with browser.get_iframe(0) as iframe:
+        conteudo = f'página criada : {str(uuid4())}'
+        iframe.find_by_css('body.cke_editable').type(conteudo)
+    browser.find_by_text('Enviar').first.click()
+    if browser.is_text_present(conteudo):
+        print("Yes, conteudo was found!")
 
     browser.quit()
 
@@ -225,4 +239,5 @@ def ducker(coluna=4):
 
 
 if __name__ == '__main__':
-    ducker()
+    splinter_new_page()
+    # ducker()
