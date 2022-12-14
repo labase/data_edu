@@ -21,7 +21,7 @@ import json
 from csv import writer
 from csv import reader
 from time import sleep
-from html3 import *
+from html3 import HTML
 RATE = 4
 HTTP = "http://"
 SUB_DIMENSION = 1
@@ -31,8 +31,8 @@ BD, BM, BT, BL, DG, GG, LG, HB, DB, MB, BB, LB, CC = ("0066cc 44cddd 66c6cc 93cd
 
 
 class Dimension:
-    def __init__(self, document=None, html=None, csv="PRE-CRIVO.csv", page=""):
-        self.document, self.html = document, html
+    def __init__(self, document=None, html_=None, csv="PRE-CRIVO.csv", page=""):
+        self.document, self.html = document, html_
         self.table = None
         self.raw_csv = []
         self.casa = {}
@@ -190,8 +190,8 @@ class Duck:
 
 
 class Dimensional:
-    def __init__(self, name=("modelo dimensional:5:5",), tag="FILO", color="white", sup=None):
-        self.name = name
+    def __init__(self, name_=("modelo dimensional:5:5",), tag="FILO", color="white", sup=None):
+        self.name = name_
         # self.cs, self.rs = name.split(":")[1], name.split(":")[2]
         self.tag, self.sup, self.color = tag, sup, color
         self.sub_dimensions = []
@@ -213,10 +213,10 @@ class Dimensional:
         _ = [sub.go(self.__htag) for sub in self.sub_dimensions]
         return str(self.h)
 
-    def create_v_sub(self, name=("modelo dimensional",), tag="FILO", color="white"):
+    def create_v_sub(self, name_=("modelo dimensional",), tag="FILO", color="white"):
         class DimensionV(Dimensional):
-            def __init__(self, _name=name, _tag=tag, _color=color, sup=self):
-                super().__init__(name, tag, color, sup)
+            def __init__(self, _name=name_, _tag=tag, _color=color, sup=self):
+                super().__init__(name_, tag, color, sup)
 
             # def __repr__(self):
             def go(self, tg):
@@ -225,8 +225,8 @@ class Dimensional:
                 tags = []
                 for namer in self.name:
                     # print(namer, namer.split(":"))
-                    name_, cs, rs, tg = namer.split(":")
-                    t = t.th(f"{name_} ({tg})", scope="col", colspan=f'{cs}', rowspan=f'{rs}', bgcolor=color)
+                    namer_, cs, rs, tg = namer.split(":")
+                    t = t.th(f"{namer_} ({tg})", scope="col", colspan=f'{cs}', rowspan=f'{rs}', bgcolor=color)
                     tags += [tg]*int(cs)
                 self.sup.sub_tags += [tags]
                 # t = [tg.tr.th(namer, scope="row", colspan='4', bgcolor=color) for namer in self.name]
@@ -252,10 +252,10 @@ class Dimensional:
         self.sub_dimensions.append(sub_dimension)  # _name=name, _tag=tag, _color=color, sup=self))
         return sub_dimension
 
-    def create_h_sub(self, name=("modelo dimensional",), tag="FILO", color=0):
+    def create_h_sub(self, name_=("modelo dimensional",), tag="FILO", color=0):
         class DimensionH(Dimensional):
-            def __init__(self, _name=name, _tag=tag, _color=color, sup=self):
-                super().__init__(name, tag, "white", sup)
+            def __init__(self, _name=name_, _tag=tag, _color=color, sup=self):
+                super().__init__(name_, tag, "white", sup)
                 self.cross = []
                 self.colors = [HB, DB, BB, MB, LB][color:]
                 self.h_row = self.sup.h_row
@@ -267,8 +267,8 @@ class Dimensional:
                 for namer in self.name:
                     cl = self.colors.pop(0)
                     # print(namer, namer.split(":"))
-                    name_, cs, rs, tg = namer.split(":")
-                    n, nc, nr = f"{name_} ({tg})", f'{cs}', f'{rs}'
+                    namer_, cs, rs, tg = namer.split(":")
+                    n, nc, nr = f"{namer_} ({tg})", f'{cs}', f'{rs}'
                     t = t.th(n, scope="row", colspan=nc, rowspan=nr, bgcolor=cl) if cs != '0' else t
                     # self.sup.hsub_tags += [[tg] * int(rs)]
                     h_row = self.h_row
@@ -349,10 +349,10 @@ def splinter_new_page():
     browser.quit()
 
 
-def main(document, html):
+def main(document, html_):
     cfile = "http://localhost:8000/PRE-CRIVO.csv"
     cpage = "http://localhost:8000/var/Memoria.json"
-    Dimension(document, html, cfile, cpage).vai()
+    Dimension(document, html_, cfile, cpage).vai()
 
 
 def ducker(coluna=4):
