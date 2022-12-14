@@ -13,16 +13,21 @@ Changelog
 .. versionadded::    22.12a0
         primeira versão @05
         com resultados das pesquisas @07
+
+.. versionadded::    22.12a1
+        adiciona classe Dimensional @1
 """
 import json
 from csv import writer
 from csv import reader
 from time import sleep
+from html3 import *
 RATE = 4
 HTTP = "http://"
 SUB_DIMENSION = 1
 
-BD, BL, DG, GG, LG, HB, DB, BB, LB, CC = "0066cc 93cddd 4f6228 77933c c3d69b 984807 e46c0a f79646 fac090 cccccc".split()
+BD, BM, BT, BL, DG, GG, LG, HB, DB, MB, BB, LB, CC = ("0066cc 44cddd 66c6cc 93cddd 4f6228 77933c c3d69b 984807 e46c0a"
+                                                      " f09646 ff9666 fac090 cccccc").split()
 
 
 class Dimension:
@@ -184,6 +189,127 @@ class Duck:
         # ajax.get(self.url, oncomplete=read)
 
 
+class Dimensional:
+    def __init__(self, name=("modelo dimensional:5:5",), tag="FILO", color="white", sup=None):
+        self.name = name
+        # self.cs, self.rs = name.split(":")[1], name.split(":")[2]
+        self.tag, self.sup, self.color = tag, sup, color
+        self.sub_dimensions = []
+        self.sub_tags = []
+        self.hsub_tags = [[]for _ in range(30)]
+        self.h_row = 0
+        self.h = HTML()
+
+        self.__htag = self.h.table().thead()
+        # self.__htag.th("Ontogẽnese/Filogênese", colspan='5', rowspan='5', bgcolor="999955")
+
+    def get_tags(self, inx, iny):
+        return "".join([tag[inx] for tag in self.sub_tags[0:5]]) + "".join([str(tg) for tg in self.hsub_tags[iny]])
+
+    def htag(self):
+        return self.__htag
+
+    def __repr__(self):
+        _ = [sub.go(self.__htag) for sub in self.sub_dimensions]
+        return str(self.h)
+
+    def create_v_sub(self, name=("modelo dimensional",), tag="FILO", color="white"):
+        class DimensionV(Dimensional):
+            def __init__(self, _name=name, _tag=tag, _color=color, sup=self):
+                super().__init__(name, tag, color, sup)
+
+            # def __repr__(self):
+            def go(self, tg):
+                t = tg.tr
+                # col_sp = len(self.name)//self.cs
+                tags = []
+                for namer in self.name:
+                    # print(namer, namer.split(":"))
+                    name_, cs, rs, tg = namer.split(":")
+                    t = t.th(f"{name_} ({tg})", scope="col", colspan=f'{cs}', rowspan=f'{rs}', bgcolor=color)
+                    tags += [tg]*int(cs)
+                self.sup.sub_tags += [tags]
+                # t = [tg.tr.th(namer, scope="row", colspan='4', bgcolor=color) for namer in self.name]
+                # print(self.sub_tags)
+                # self.rs = 1
+                return str(t)
+        sub_dimension = DimensionV()
+        self.sub_dimensions.append(sub_dimension)  # _name=name, _tag=tag, _color=color, sup=self))
+        return sub_dimension
+
+    def create_vh_sub(self, name=("modelo dimensional",), tag="FILO", color="white"):
+        class DimensionVH(Dimensional):
+            def __init__(self, _name=name, _tag=tag, _color=color, sup=self):
+                super().__init__(name, tag, color, sup)
+
+            def go(self, tg):
+                t = tg.tr
+                name_, cs, rs, tg = self.name.split(":")
+                t = t.th(scope="row", colspan=f'{cs}', rowspan=f'{rs}', bgcolor=color)
+                t.h1(f"{name_} ({tg})")
+                return str(t)
+        sub_dimension = DimensionVH()
+        self.sub_dimensions.append(sub_dimension)  # _name=name, _tag=tag, _color=color, sup=self))
+        return sub_dimension
+
+    def create_h_sub(self, name=("modelo dimensional",), tag="FILO", color=0):
+        class DimensionH(Dimensional):
+            def __init__(self, _name=name, _tag=tag, _color=color, sup=self):
+                super().__init__(name, tag, "white", sup)
+                self.cross = []
+                self.colors = [HB, DB, BB, MB, LB][color:]
+                self.h_row = self.sup.h_row
+                # self.colors.pop(color)
+
+            def go(self, tg):
+                # self.colors = [HB, DB, BB, MB, LB]
+                t = tg.tr
+                for namer in self.name:
+                    cl = self.colors.pop(0)
+                    # print(namer, namer.split(":"))
+                    name_, cs, rs, tg = namer.split(":")
+                    n, nc, nr = f"{name_} ({tg})", f'{cs}', f'{rs}'
+                    t = t.th(n, scope="row", colspan=nc, rowspan=nr, bgcolor=cl) if cs != '0' else t
+                    # self.sup.hsub_tags += [[tg] * int(rs)]
+                    h_row = self.h_row
+                    _ = [cts.append(tg) for cts in self.sup.hsub_tags[h_row:h_row+int(rs)]]
+                # for inx in range(len(self.sup.sub_tags[0])-len(self.sup.hsub_tags[0])):
+                print("v, h", len(self.sup.sub_tags[0]), len(self.sup.hsub_tags[0]))
+                for inx in range(10):
+                    t = t.td(bgcolor=CC)
+                    t.font(self.sup.get_tags(inx, self.h_row), size="1px")
+                print(self.sup.hsub_tags)
+                print(self.sup.get_tags(0, 0))
+
+                return str(t)
+        sub_dimension = DimensionH()
+        self.sub_dimensions.append(sub_dimension)  # _name=name, _tag=tag, _color=color, sup=self))
+        self.h_row += 1
+        return sub_dimension
+
+
+def htm3_write():
+    d = Dimensional()
+    d.create_vh_sub("Ontogẽnese/Filogênese:5:6:OF", "F", "995599")
+    d.create_v_sub(["Filogênese:10:1:F"], "F", BD)
+    d.create_v_sub(["Escrita:10:1:E"], "E", BM)
+    d.create_v_sub(["Microgênese:10:1:M"], "M", DG)
+    d.create_v_sub(["Função Cognitiva:10:1:FC"], "FC", GG)
+    lin = ("Linguagem:1:1:L,Memória:1:1:M,Atenção:1:1:A,Percepção:1:1:P,Emoção:1:1:E,Lógica:1:1:O,Imaginário:1:1:I,"
+           "Transitividade:1:1:T,Raciocínio:1:1:R,Representação:1:1:S")
+    d.create_v_sub(lin.split(","), "FC", LG)
+    lin = ("ONTOGÊNESE:1:9:O,HABILIDADES DE ALFABETIZAÇÃO:1:9:HA,ORALIDADE:1:5:OR,"
+           "Consciência fonêmica:1:3:CF,Segmenta os fonemas:1:1:SF")
+    d.create_h_sub(lin.split(","), "FC", 0)
+    lin = "Gestos fonoarticulatórios:1:1:GF"
+    d.create_h_sub(lin.split(","), "FC", 4)
+    lin = "Ouve e Lembra:1:1:OL"
+    d.create_h_sub(lin.split(","), "FC", 4)
+    lin = "Expressão Oral:1:3:EO,Express Interações:1:1:EE"
+    d.create_h_sub(lin.split(","), "FC", 3)
+    print(d)
+
+
 def splinter_new_page():
     # require: pip install splinter[selenium3]
     from splinter import Browser
@@ -211,12 +337,15 @@ def splinter_new_page():
     browser.visit('https://activufrj.nce.ufrj.br/wiki/newpage/carlo?folder=5db0e33e9f4a4b6bb91c381032ac300d')
     browser.find_by_name('nomepag').fill(page_name)
     with browser.get_iframe(0) as iframe:
-        conteudo = f'página criada : {str(uuid4())}'
+        conteudo = f'<p>página criada : {str(uuid4())}</p></br>'
         iframe.find_by_css('body.cke_editable').type(conteudo)
+    browser.find_by_id("cke_16").first.click()
+    browser.find_by_name('nomepag').fill(page_name)
     browser.find_by_text('Enviar').first.click()
     if browser.is_text_present(conteudo):
         print("Yes, conteudo was found!")
-
+        browser.visit(f'https://activufrj.nce.ufrj.br/wiki/edit/carlo/{page_name}')
+        browser.find_by_text('Enviar').first.click()
     browser.quit()
 
 
@@ -239,5 +368,6 @@ def ducker(coluna=4):
 
 
 if __name__ == '__main__':
-    splinter_new_page()
+    # splinter_new_page()
+    htm3_write()
     # ducker()
