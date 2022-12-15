@@ -28,14 +28,21 @@ from collections import namedtuple
 RATE = 4
 HTTP = "http://"
 SUB_DIMENSION = 0
-Cs = namedtuple("cs", "o0 o1 o2 o3 o4 o5 f0 f1 f2 m0 m1 m2 m3 tt th td ts tm tl tp tc st ss sl sa si sr sb sv se sc sd")
+Cs = namedtuple("Cs", "o0 o1 o2 o3 o4 o5 f0 f1 f2 m0 m1 m2 m3 tt th td ts tm tl tp tc st ss sl sa si sr sb sv se sc sd")
 CSN = ([f"nc_onto_lv{c}" for c in range(6)]+[f"nc_filo_lv{c}" for c in range(3)]+[f"nc_micro_lv{c}" for c in range(4)] +
        [f"nc_md_{c}" for c in "table header dim sub marca liga parte corte".split()] +
        [f"nc_dc_{c}" for c in "tema sub liga axioma resumir resumo busca verbete explica corpo dados".split()])
 CS = Cs(*CSN)
-print(CS)
+# print(CS)
 BD, BM, BT, BL, DG, GG, LG, HB, DB, MB, BB, LB, CC = ("0066cc 44cddd 66c6cc 93cddd 4f6228 77933c c3d69b 984807 e46c0a"
                                                       " f09646 ff9666 fac090 cccccc").split()
+CCR = ([HB, DB, MB, BB, LB, LB, BD, BM, BT, BL, DG, GG, LG, CC, CC, CC, CC, CC, CC, CC, CC]*2)[:32]
+CSC = Cs(*CCR)
+# print(CSC._asdict()['tc'])
+
+
+def css(tag):
+    return dict(bgcolor=tag) if tag in CS else dict(klass=tag)
 
 
 class Dimension:
@@ -216,6 +223,13 @@ class Dimensional:
 
         self.__htag = self.h.table(border="1", cellpadding="0", cellspacing="0", dir="ltr").thead()
 
+    def add_css(self, elt=None):
+        elt = elt or self.h
+        ss_form = "{clazz}[ background-color: {color}; ]"
+        css_form = "".join([f"{clazz}{{ background-color: {color}; }} " for clazz, color in zip(CS, CCR)])
+        # print(css_form)
+        self.h.script("add_css", css_form)
+
     def paint(self, table):
         self.create_vh_sub("Ontogênese/Filogênese:5:6:OF", "F", "995599")
         head = zip(table, [BD, BM, DG, GG, LG])
@@ -240,6 +254,7 @@ class Dimensional:
             elt.p("Lorem Ipsum", id=f"RS_{iid}", klass=CS.sr)
 
         head = f"Filogênese-Escrita-Microgênese-{hd}"
+        self.add_css()
         if alone:
             ht = HTML()
             ht.title(head)
