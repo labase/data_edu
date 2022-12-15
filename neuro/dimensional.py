@@ -15,7 +15,8 @@ Changelog
         com resultados das pesquisas @07
 
 .. versionadded::    22.12a1
-        adiciona classe Dimensional @1
+        adiciona classe Dimensional @15
+        adiciona marcadores CSS @16
 """
 import json
 from csv import writer
@@ -23,10 +24,16 @@ from csv import reader
 from time import sleep
 from html3 import HTML
 import bs4 as bs
+from collections import namedtuple
 RATE = 4
 HTTP = "http://"
 SUB_DIMENSION = 0
-
+Cs = namedtuple("cs", "o0 o1 o2 o3 o4 o5 f0 f1 f2 m0 m1 m2 m3 tt th td ts tm tl tp tc st ss sl sa si sr sb sv se sc sd")
+CSN = ([f"nc_onto_lv{c}" for c in range(6)]+[f"nc_filo_lv{c}" for c in range(3)]+[f"nc_micro_lv{c}" for c in range(4)] +
+       [f"nc_md_{c}" for c in "table header dim sub marca liga parte corte".split()] +
+       [f"nc_dc_{c}" for c in "tema sub liga axioma resumir resumo busca verbete explica corpo dados".split()])
+CS = Cs(*CSN)
+print(CS)
 BD, BM, BT, BL, DG, GG, LG, HB, DB, MB, BB, LB, CC = ("0066cc 44cddd 66c6cc 93cddd 4f6228 77933c c3d69b 984807 e46c0a"
                                                       " f09646 ff9666 fac090 cccccc").split()
 
@@ -209,32 +216,42 @@ class Dimensional:
 
         self.__htag = self.h.table(border="1", cellpadding="0", cellspacing="0", dir="ltr").thead()
 
-    def page(self, sub=SUB_DIMENSION, alone=False, pager=HTML(), hd="Linguagem"):
+    def paint(self, table):
+        self.create_vh_sub("Ontogênese/Filogênese:5:6:OF", "F", "995599")
+        head = zip(table, [BD, BM, DG, GG, LG])
+        _ = [self.create_v_sub(row, "F", color) for row, color in head]
+        _ = [self.create_h_sub(row, "F", 0) for row in table[5:]]
+        return str(self)
+
+    def page(self, sub=SUB_DIMENSION, hd="Linguagem", alone=False, pager=HTML()):
+        """tema sub liga axioma resumo busca verbete explica corpo dados"""
         def refer(elt, url, tit, abt):
-            elt.a(tit, href=f"{HTTP}{url}")
-            elt.p(abt)
+            elt.a(tit, href=f"{HTTP}{url}", klass=CS.sv)
+            elt.p(abt, klass=CS.se)
 
         def item(iid, elt):
-            elt.a("", id=iid)
+            elt.a("", id=iid, klass=CS.sl)
             title = self.casa[iid]
-            elt.h2(title)
+            elt.h2(title, klass=CS.ss)
             if title in self.page_data:
                 entries = self.page_data[title]
                 [refer(elt, **entry) for entry in entries]
-            elt.h2("Resumo")
-            elt.p("Lorem Ipsum")
+            elt.h3("Resumo", id=f"RT_{iid}", klass=CS.si)
+            elt.p("Lorem Ipsum", id=f"RS_{iid}", klass=CS.sr)
 
         head = f"Filogênese-Escrita-Microgênese-{hd}"
-        dv = pager
         if alone:
             ht = HTML()
             ht.title(head)
             ht = ht.body()
-            dv = ht.div()
-        dv.h1(head)
-        themes = self.tag_matrix[0]
+            dv = ht.div(klass=CS.sc)
+        else:
+            dv = pager.div(klass=CS.sc)
+        dv.h1(head, klass=CS.st)
+        themes = self.tag_matrix[sub]
         for line in themes:
-            item(line, dv)
+            di = dv.div(klass=CS.sd)
+            item(line, di)
         return dv
 
     def get_tags(self, inx, iny):
@@ -361,15 +378,20 @@ def html_read_table():
 def htm3_write_from_reader():
     d = Dimensional()
     table = html_read_table()
-    d.create_vh_sub("Ontogênese/Filogênese:5:6:OF", "F", "995599")
-    _ = [print(",".join(row)) for row in table[:2]]
-    head = zip(table, [BD, BM, DG, GG, LG])
-    _ = [d.create_v_sub(row, "F", color) for row, color in head]
-    _ = [d.create_h_sub(row, "F", 0) for row in table[5:]]
-    print(d)
-    # print(d.casa)
-    # print(d.h_themes)
-    print(d.page())
+    print(d.paint(table))
+    print(d.page(1, "Memória"))
+    return
+
+
+def htm3_write_pages_from_reader(dims="Linguagem Memória Atenção Percepção Emoção"):
+    def paint(ix, dim):
+        print("X"*10, "-"*10)
+        print(d.page(sub=ix, hd=dim))
+    d = Dimensional()
+    table = html_read_table()
+    d.paint(table)
+    [paint(ix, dim) for ix, dim in enumerate(dims.split())]
+    return
 
 
 def htm3_write():
@@ -455,5 +477,6 @@ if __name__ == '__main__':
     # splinter_new_page()
     # htm3_write()
     # html_read_table()
-    htm3_write_from_reader()
+    # htm3_write_from_reader()
+    htm3_write_pages_from_reader()
     # ducker()
