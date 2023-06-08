@@ -15,24 +15,39 @@ Changelog
         com resultados das pesquisas @07
 
 .. versionadded::    22.12a1
-        adiciona classe Dimensional @1
+        adiciona classe Dimensional @15
+        adiciona marcadores CSS @16
 """
 import json
 from csv import writer
 from csv import reader
 from time import sleep
-from html3 import *
+from html3 import HTML
+import bs4 as bs
+from collections import namedtuple
 RATE = 4
 HTTP = "http://"
-SUB_DIMENSION = 1
-
+SUB_DIMENSION = 0
+Cs = namedtuple("Cs", "o0 o1 o2 o3 o4 o5 f0 f1 f2 m0 m1 m2 m3 tt th td ts tm tl tp tc st ss sl sa si sr sb sv se sc sd")
+CSN = ([f"nc_onto_lv{c}" for c in range(6)]+[f"nc_filo_lv{c}" for c in range(3)]+[f"nc_micro_lv{c}" for c in range(4)] +
+       [f"nc_md_{c}" for c in "table header dim sub marca liga parte corte".split()] +
+       [f"nc_dc_{c}" for c in "tema sub liga axioma resumir resumo busca verbete explica corpo dados".split()])
+CS = Cs(*CSN)
+# print(CS)
 BD, BM, BT, BL, DG, GG, LG, HB, DB, MB, BB, LB, CC = ("0066cc 44cddd 66c6cc 93cddd 4f6228 77933c c3d69b 984807 e46c0a"
                                                       " f09646 ff9666 fac090 cccccc").split()
+CCR = ([HB, DB, MB, BB, LB, LB, BD, BM, BT, BL, DG, GG, LG, CC, CC, CC, CC, CC, CC, CC, CC]*2)[:32]
+CSC = Cs(*CCR)
+# print(CSC._asdict()['tc'])
+
+
+def css(tag):
+    return dict(bgcolor=tag) if tag in CS else dict(klass=tag)
 
 
 class Dimension:
-    def __init__(self, document=None, html=None, csv="PRE-CRIVO.csv", page=""):
-        self.document, self.html = document, html
+    def __init__(self, document=None, html_=None, csv="PRE-CRIVO.csv", page=""):
+        self.document, self.html = document, html_
         self.table = None
         self.raw_csv = []
         self.casa = {}
@@ -84,7 +99,7 @@ class Dimension:
         self.document["md0_0"].rowspan = 10
         _ = self.table <= self.page()
 
-    def page(self, sub=SUB_DIMENSION, alone=False):
+    def page(self, sub=1, alone=False):
         def refer(elt, url, tit, abt):
             _ = elt <= w.A(tit, href=f"{HTTP}{url}")
             _ = elt <= w.P(abt)
@@ -190,20 +205,72 @@ class Duck:
 
 
 class Dimensional:
-    def __init__(self, name=("modelo dimensional:5:5",), tag="FILO", color="white", sup=None):
-        self.name = name
+    def __init__(self, name_=("modelo dimensional:5:5",), tag="FILO", color="white", sup=None):
+        self.name = name_
         # self.cs, self.rs = name.split(":")[1], name.split(":")[2]
         self.tag, self.sup, self.color = tag, sup, color
         self.sub_dimensions = []
         self.sub_tags = []
-        self.hsub_tags = [[]for _ in range(30)]
+        self.hsub_tags = [[]for _ in range(60)]
         self.h_row = 0
         self.h = HTML()
+        self.casa = {}
+        self.h_themes = {}
+        self.page_data = {}
+        self.tag_matrix = [[] for _ in range(30)]
+        self.header = ['ONTOGÊNESE', 'HABILIDADES DE ALFABETIZAÇÃO', 'ORALIDADE',
+                       'Consciência fonêmica', 'Segmenta os fonemas']
 
-        self.__htag = self.h.table().thead()
-        # self.__htag.th("Ontogẽnese/Filogênese", colspan='5', rowspan='5', bgcolor="999955")
+        self.__htag = self.h.table(border="1", cellpadding="0", cellspacing="0", dir="ltr").thead()
+
+    def add_css(self, elt=None):
+        elt = elt or self.h
+        ss_form = "{clazz}[ background-color: {color}; ]"
+        css_form = "".join([f"{clazz}{{ background-color: {color}; }} " for clazz, color in zip(CS, CCR)])
+        # print(css_form)
+        self.h.script("add_css", css_form)
+
+    def paint(self, table):
+        self.create_vh_sub("Ontogênese/Filogênese:5:6:OF", "F", "995599")
+        head = zip(table, [BD, BM, DG, GG, LG])
+        _ = [self.create_v_sub(row, "F", color) for row, color in head]
+        _ = [self.create_h_sub(row, "F", 0) for row in table[5:]]
+        return str(self)
+
+    def page(self, sub=SUB_DIMENSION, hd="Linguagem", alone=False, pager=HTML()):
+        """tema sub liga axioma resumo busca verbete explica corpo dados"""
+        def refer(elt, url, tit, abt):
+            elt.a(tit, href=f"{HTTP}{url}", klass=CS.sv)
+            elt.p(abt, klass=CS.se)
+
+        def item(iid, elt):
+            elt.a("", id=iid, klass=CS.sl)
+            title = self.casa[iid]
+            elt.h2(title, klass=CS.ss)
+            if title in self.page_data:
+                entries = self.page_data[title]
+                [refer(elt, **entry) for entry in entries]
+            elt.h3("Resumo", id=f"RT_{iid}", klass=CS.si)
+            elt.p("Lorem Ipsum", id=f"RS_{iid}", klass=CS.sr)
+
+        head = f"Filogênese-Escrita-Microgênese-{hd}"
+        self.add_css()
+        if alone:
+            ht = HTML()
+            ht.title(head)
+            ht = ht.body()
+            dv = ht.div(klass=CS.sc)
+        else:
+            dv = pager.div(klass=CS.sc)
+        dv.h1(head, klass=CS.st)
+        themes = self.tag_matrix[sub]
+        for line in themes:
+            di = dv.div(klass=CS.sd)
+            item(line, di)
+        return dv
 
     def get_tags(self, inx, iny):
+        # print('get_tags', inx, iny, self.hsub_tags[iny], self.sub_tags[0:5])
         return "".join([tag[inx] for tag in self.sub_tags[0:5]]) + "".join([str(tg) for tg in self.hsub_tags[iny]])
 
     def htag(self):
@@ -213,10 +280,10 @@ class Dimensional:
         _ = [sub.go(self.__htag) for sub in self.sub_dimensions]
         return str(self.h)
 
-    def create_v_sub(self, name=("modelo dimensional",), tag="FILO", color="white"):
+    def create_v_sub(self, name_=("modelo dimensional",), tag="FILO", color="white"):
         class DimensionV(Dimensional):
-            def __init__(self, _name=name, _tag=tag, _color=color, sup=self):
-                super().__init__(name, tag, color, sup)
+            def __init__(self, _name=name_, _tag=tag, _color=color, sup=self):
+                super().__init__(name_, tag, color, sup)
 
             # def __repr__(self):
             def go(self, tg):
@@ -225,13 +292,12 @@ class Dimensional:
                 tags = []
                 for namer in self.name:
                     # print(namer, namer.split(":"))
-                    name_, cs, rs, tg = namer.split(":")
-                    t = t.th(f"{name_} ({tg})", scope="col", colspan=f'{cs}', rowspan=f'{rs}', bgcolor=color)
+                    namer_, cs, rs, tg = namer.split(":")
+                    t = t.th(scope="col", colspan=f'{cs}', rowspan=f'{rs}', bgcolor=color)
+                    t.p(f"{namer_} ({tg})", style="text-align: center;")
                     tags += [tg]*int(cs)
                 self.sup.sub_tags += [tags]
-                # t = [tg.tr.th(namer, scope="row", colspan='4', bgcolor=color) for namer in self.name]
-                # print(self.sub_tags)
-                # self.rs = 1
+                self.sup.h_themes = {code.split(":")[-1]: code.split(":")[0] for code in self.name}
                 return str(t)
         sub_dimension = DimensionV()
         self.sub_dimensions.append(sub_dimension)  # _name=name, _tag=tag, _color=color, sup=self))
@@ -246,40 +312,50 @@ class Dimensional:
                 t = tg.tr
                 name_, cs, rs, tg = self.name.split(":")
                 t = t.th(scope="row", colspan=f'{cs}', rowspan=f'{rs}', bgcolor=color)
-                t.h1(f"{name_} ({tg})")
+                t.b.big.big.big.p(f"{name_} ({tg})", style="text-align: center;")
+                # t.h1(f"{name_} ({tg})")
                 return str(t)
         sub_dimension = DimensionVH()
         self.sub_dimensions.append(sub_dimension)  # _name=name, _tag=tag, _color=color, sup=self))
         return sub_dimension
 
-    def create_h_sub(self, name=("modelo dimensional",), tag="FILO", color=0):
+    def create_h_sub(self, name_=("modelo dimensional",), tag="FILO", color=0):
         class DimensionH(Dimensional):
-            def __init__(self, _name=name, _tag=tag, _color=color, sup=self):
-                super().__init__(name, tag, "white", sup)
+            def __init__(self, _name=name_, _tag=tag, _color=color, sup=self):
+                super().__init__(name_, tag, "white", sup)
                 self.cross = []
-                self.colors = [HB, DB, BB, MB, LB][color:]
+                fila = 5 - len(self.name)
+                # self.colors = [HB, DB, BB, MB, LB, LB, LB][color:]
+                self.colors = [HB, DB, BB, MB, LB, LB, LB][fila:]
                 self.h_row = self.sup.h_row
                 # self.colors.pop(color)
 
             def go(self, tg):
-                # self.colors = [HB, DB, BB, MB, LB]
                 t = tg.tr
+                last_theme_name = []
                 for namer in self.name:
                     cl = self.colors.pop(0)
                     # print(namer, namer.split(":"))
-                    name_, cs, rs, tg = namer.split(":")
-                    n, nc, nr = f"{name_} ({tg})", f'{cs}', f'{rs}'
+                    namer_, cs, rs, tg = namer.split(":")
+                    n, nc, nr = f"{namer_} ({tg})", f'{cs}', f'{rs}'
                     t = t.th(n, scope="row", colspan=nc, rowspan=nr, bgcolor=cl) if cs != '0' else t
                     # self.sup.hsub_tags += [[tg] * int(rs)]
                     h_row = self.h_row
                     _ = [cts.append(tg) for cts in self.sup.hsub_tags[h_row:h_row+int(rs)]]
-                # for inx in range(len(self.sup.sub_tags[0])-len(self.sup.hsub_tags[0])):
-                print("v, h", len(self.sup.sub_tags[0]), len(self.sup.hsub_tags[0]))
-                for inx in range(10):
+                    last_theme_name += ([namer_]+[" "]*(int(cs)-1))
+                    # bk = 1 if int(cs) > 1 else bk
+                bk = len(last_theme_name)
+                self.sup.header = header = self.sup.header[:-bk]+last_theme_name
+
+                # print("v, h", len(self.sup.sub_tags[0]), len(self.sup.hsub_tags[0]))
+                for inx in range(19):
                     t = t.td(bgcolor=CC)
-                    t.font(self.sup.get_tags(inx, self.h_row), size="1px")
-                print(self.sup.hsub_tags)
-                print(self.sup.get_tags(0, 0))
+                    tag_name = self.sup.get_tags(inx, self.h_row)
+                    t.small.small.small.a(tag_name, href=f"#{tag_name}")
+                    self.sup.casa[tag_name] = f"{self.sup.h_themes[self.sup.sub_tags[-1][inx]]} — {'—'.join(header)}"
+                    self.sup.tag_matrix[inx].append(tag_name)
+                # print(self.sup.hsub_tags)
+                # print(self.sup.get_tags(0, 0))
 
                 return str(t)
         sub_dimension = DimensionH()
@@ -288,9 +364,54 @@ class Dimensional:
         return sub_dimension
 
 
+def html_read_table():
+    def parse(td_, _, __):
+        colspan = td_["colspan"] if 'colspan' in td_.attrs else '1'
+        rowspan = td_["rowspan"] if 'rowspan' in td_.attrs else '1'
+        text = td_.text.replace('\n', '')
+        text, ttag = text.split(' (') if ' (' in text else (text, text[:3].upper())
+        return ":".join([text, colspan, rowspan, ttag[:-1]])
+    tabela_matriz = []
+    with open('var/modelo.html', 'r') as table_file:
+        table_raw = table_file.read()
+        table = bs.BeautifulSoup(table_raw, "lxml")
+        find_table = table.find('table', class_="modelo")
+        rows = find_table.find_all('tr')
+        # print(len(rows), rows[0], table_raw[:300])
+        # tabela_matriz = [[parse(td, ix) for ix, td in enumerate(i.find_all('td')) if td.text != u'\xa0']for i in rows]
+        for iy, ic in enumerate(rows):
+            row = []
+            for ix, td in enumerate(ic.find_all('td')):
+                if td.text != u'\xa0':
+                    row.append(parse(td, ix, iy))
+            tabela_matriz.append(row) if row else None
+        # tabela_matriz = [row + [" :1:1:_"] * (5-len(row)) if len(row) < 5 else row for row in tabela_matriz]
+        # [print(row) for row in tabela_matriz[-30:]]
+        return tabela_matriz
+
+
+def htm3_write_from_reader():
+    d = Dimensional()
+    table = html_read_table()
+    print(d.paint(table))
+    print(d.page(1, "Memória"))
+    return
+
+
+def htm3_write_pages_from_reader(dims="Linguagem Memória Atenção Percepção Emoção"):
+    def paint(ix, dim):
+        print("X"*10, "-"*10)
+        print(d.page(sub=ix, hd=dim))
+    d = Dimensional()
+    table = html_read_table()
+    d.paint(table)
+    [paint(ix, dim) for ix, dim in enumerate(dims.split())]
+    return
+
+
 def htm3_write():
     d = Dimensional()
-    d.create_vh_sub("Ontogẽnese/Filogênese:5:6:OF", "F", "995599")
+    d.create_vh_sub("Ontogênese/Filogênese:5:6:OF", "F", "995599")
     d.create_v_sub(["Filogênese:10:1:F"], "F", BD)
     d.create_v_sub(["Escrita:10:1:E"], "E", BM)
     d.create_v_sub(["Microgênese:10:1:M"], "M", DG)
@@ -349,10 +470,10 @@ def splinter_new_page():
     browser.quit()
 
 
-def main(document, html):
+def main(document, html_):
     cfile = "http://localhost:8000/PRE-CRIVO.csv"
     cpage = "http://localhost:8000/var/Memoria.json"
-    Dimension(document, html, cfile, cpage).vai()
+    Dimension(document, html_, cfile, cpage).vai()
 
 
 def ducker(coluna=4):
@@ -369,5 +490,8 @@ def ducker(coluna=4):
 
 if __name__ == '__main__':
     # splinter_new_page()
-    htm3_write()
+    # htm3_write()
+    # html_read_table()
+    # htm3_write_from_reader()
+    htm3_write_pages_from_reader()
     # ducker()
