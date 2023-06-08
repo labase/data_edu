@@ -12,6 +12,13 @@ The format is based on `Keep a Changelog`_.
 -------------
 - to be defined
 
+`23.06`_
+----------------
+
+Added
++++++
+- Preliminary stats on Alite games data.
+
 `22.06`_
 ----------------
 
@@ -45,7 +52,8 @@ LABASE_ - NCE_ - UFRJ_
 .. _NCE: http://nce.ufrj.br
 .. _UFRJ: http://www.ufrj.br
 .. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/
-.. _22.06: https://gitlab.com/cetoli/eucaros/-/releases
+.. _22.06: https://github.com/labase/data_edu/releases
+.. _23.06: https://github.com/labase/data_edu/releases
 
 .. |LABASE| image:: https://cetoli.gitlab.io/spyms/image/labase-logo-8.png
    :target: http://labase.activufrj.nce.ufrj.br
