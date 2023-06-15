@@ -372,7 +372,7 @@ def html_read_table():
         text, ttag = text.split(' (') if ' (' in text else (text, text[:3].upper())
         return ":".join([text, colspan, rowspan, ttag[:-1]])
     tabela_matriz = []
-    with open('var/modelo.html', 'r') as table_file:
+    with open('modelo.html', 'r') as table_file:
         table_raw = table_file.read()
         table = bs.BeautifulSoup(table_raw, "lxml")
         find_table = table.find('table', class_="modelo")
